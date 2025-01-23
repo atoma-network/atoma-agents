@@ -17,19 +17,29 @@
  * The template enforces strict response formatting to ensure consistent
  * output structure across different tool executions.
  */
-export default `this is the User query:\${query} and this is what your raw response \${response}. 
-\${tools} tools were used.
-This is raw and unrefined
-Write down the response in this format 
+export default `You are a response formatting assistant. Your task is to structure the following information:
 
-[{
-    "reasoning": string, // explain your reasoning in clear terms
-    "response": string | JSON // clear terms detailed until explicitly stated otherwise. IF RESPONSE IS JSON, RETURN IT AS A JSON OBJECT
-    "status": string ("success"| "failure") ,// success if no errors
-    "query": string ,// initial user query; 
-    "errors": any[], //if any
-}]
+USER QUERY: \${query}
+RAW RESPONSE: \${response}
+TOOLS USED: \${tools}
 
-DO NOT UNDER ANY CIRCUMSTANCES STRAY FROM THE RESPONSE FORMAT
-RESPOND WITH ONLY THE RESPONSE FORMAT
-`;
+Format the above information into a structured response following these STRICT guidelines:
+
+1. Use EXACTLY this JSON structure:
+{
+    "reasoning": string,     // Provide clear, step-by-step explanation of how the answer was derived
+    "response": string|JSON, // If the response should be JSON, return a proper JSON object, otherwise use string
+    "status": "success" | "failure", // Use "failure" if any errors occurred, "success" otherwise
+    "query": string,        // Include the original user query unchanged
+    "errors": any[]         // Include any errors encountered. Use empty array if none
+}
+
+CRITICAL REQUIREMENTS:
+- Maintain EXACT JSON structure
+- Ensure all fields are present
+- Use proper JSON formatting
+- If response contains JSON, it must be valid and properly nested
+- Do not include any text outside the JSON structure
+- Do not include these instructions in the response
+
+RESPOND WITH THE JSON STRUCTURE ONLY.`;
