@@ -27,6 +27,17 @@ import {
   getAfSuiExchangeRateWrapper,
   getStakeTransactionWrapper,
 } from '../utils/toolWrappers';
+import {
+  depositIntoObligationWrapper,
+  depositLiquidityAndGetCTokensWrapper,
+  redeemCtokensAndWithdrawLiquidityWrapper,
+  withdrawAndSendToUserWrapper,
+} from '../tools/suilend/depositWithdraw';
+import {
+  borrowAndSendToUserWrapper,
+  repayIntoObligationWrapper,
+} from '../tools/suilend/borrowRepay';
+import { liquidateAndRedeemWrapper } from '../tools/suilend/liquidation';
 
 /* 
 format for tool registry is:
@@ -564,5 +575,236 @@ export function registerAllTools(tools: Tools) {
       },
     ],
     getStakeTransactionWrapper,
+  );
+
+  // Suilend Tools
+
+  // 1. Deposit Into Obligation
+  tools.registerTool(
+    'deposit_into_obligation',
+    'Tool to deposit coins into an obligation',
+    [
+      {
+        name: 'lendingMarketId',
+        type: 'string',
+        description: 'ID of the lending market',
+        required: true,
+      },
+      {
+        name: 'lendingMarketType',
+        type: 'string',
+        description: 'Type of the lending market',
+        required: true,
+      },
+      {
+        name: 'ownerId',
+        type: 'string',
+        description: 'Address of the owner',
+        required: true,
+      },
+      {
+        name: 'coinType',
+        type: 'string',
+        description: 'Type of coin to deposit',
+        required: true,
+      },
+      {
+        name: 'value',
+        type: 'string',
+        description: 'Amount to deposit (in base units)',
+        required: true,
+      },
+      {
+        name: 'obligationOwnerCapId',
+        type: 'string',
+        description: 'Obligation owner capability ID',
+        required: true,
+      },
+    ],
+    depositIntoObligationWrapper,
+  );
+
+  // 2. Deposit Liquidity and Get CTokens
+  tools.registerTool(
+    'deposit_liquidity_get_ctokens',
+    'Tool to deposit liquidity and receive CTokens',
+    [
+      {
+        name: 'lendingMarketId',
+        type: 'string',
+        description: 'ID of the lending market',
+        required: true,
+      },
+      {
+        name: 'lendingMarketType',
+        type: 'string',
+        description: 'Type of the lending market',
+        required: true,
+      },
+      {
+        name: 'ownerId',
+        type: 'string',
+        description: 'Address of the owner',
+        required: true,
+      },
+      {
+        name: 'coinType',
+        type: 'string',
+        description: 'Type of coin to deposit',
+        required: true,
+      },
+      {
+        name: 'value',
+        type: 'string',
+        description: 'Amount to deposit (in base units)',
+        required: true,
+      },
+    ],
+    depositLiquidityAndGetCTokensWrapper,
+  );
+
+  // 3. Withdraw and Send to User
+  tools.registerTool(
+    'withdraw_and_send',
+    'Tool to withdraw funds and send them to a user',
+    [
+      {
+        name: 'lendingMarketId',
+        type: 'string',
+        description: 'ID of the lending market',
+        required: true,
+      },
+      {
+        name: 'lendingMarketType',
+        type: 'string',
+        description: 'Type of the lending market',
+        required: true,
+      },
+      {
+        name: 'ownerId',
+        type: 'string',
+        description: 'Address of the recipient',
+        required: true,
+      },
+      {
+        name: 'obligationOwnerCapId',
+        type: 'string',
+        description: 'Obligation owner capability ID',
+        required: true,
+      },
+      {
+        name: 'obligationId',
+        type: 'string',
+        description: 'ID of the obligation',
+        required: true,
+      },
+      {
+        name: 'coinType',
+        type: 'string',
+        description: 'Type of coin to withdraw',
+        required: true,
+      },
+      {
+        name: 'value',
+        type: 'string',
+        description: 'Amount to withdraw (in base units)',
+        required: true,
+      },
+    ],
+    withdrawAndSendToUserWrapper,
+  );
+
+  // 4. Redeem CTokens and Withdraw Liquidity
+  tools.registerTool(
+    'redeem_ctokens_and_withdraw',
+    'Tool to redeem CTokens and withdraw underlying liquidity',
+    [
+      {
+        name: 'lendingMarketId',
+        type: 'string',
+        description: 'ID of the lending market',
+        required: true,
+      },
+      {
+        name: 'lendingMarketType',
+        type: 'string',
+        description: 'Type of the lending market',
+        required: true,
+      },
+      {
+        name: 'ownerId',
+        type: 'string',
+        description: 'Address of the owner',
+        required: true,
+      },
+      {
+        name: 'ctokenCoinTypes',
+        type: 'array',
+        description: 'Array of CToken coin types to redeem',
+        required: true,
+      },
+    ],
+    redeemCtokensAndWithdrawLiquidityWrapper,
+  );
+
+  // 5. Borrow and Send to User
+  tools.registerTool(
+    'borrow_and_send',
+    'Tool to borrow funds and send them to a user',
+    [],
+    borrowAndSendToUserWrapper,
+  );
+
+  // 6. Repay Into Obligation
+  tools.registerTool(
+    'repay_into_obligation',
+    'Tool to repay funds into an obligation',
+    [],
+    repayIntoObligationWrapper,
+  );
+
+  // 7. Liquidate and Redeem
+  tools.registerTool(
+    'liquidate_and_redeem',
+    'Tool to liquidate an underwater position and redeem collateral',
+    [
+      {
+        name: 'lendingMarketId',
+        type: 'string',
+        description: 'ID of the lending market',
+        required: true,
+      },
+      {
+        name: 'lendingMarketType',
+        type: 'string',
+        description: 'Type of the lending market',
+        required: true,
+      },
+      {
+        name: 'obligation',
+        type: 'string',
+        description: 'ID of the obligation to liquidate',
+        required: true,
+      },
+      {
+        name: 'repayCoinType',
+        type: 'string',
+        description: 'Type of coin used to repay the debt',
+        required: true,
+      },
+      {
+        name: 'withdrawCoinType',
+        type: 'string',
+        description: 'Type of collateral coin to withdraw',
+        required: true,
+      },
+      {
+        name: 'repayCoinId',
+        type: 'string',
+        description: 'ID of the coin object used for repayment',
+        required: true,
+      },
+    ],
+    liquidateAndRedeemWrapper,
   );
 }
