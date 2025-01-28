@@ -3,6 +3,7 @@ I'll provide sample requests for all the tools available in the registry. Here a
 ### Price Tools
 
 1. **Get Single Coin Price**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -11,6 +12,7 @@ POST http://localhost:2512/query
 ```
 
 2. **Get Multiple Coin Prices**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -21,6 +23,7 @@ POST http://localhost:2512/query
 ### APR Tools
 
 3. **Get Token APR**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -31,6 +34,7 @@ POST http://localhost:2512/query
 ### Pool Tools
 
 4. **Get Single Pool Info**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -39,6 +43,7 @@ POST http://localhost:2512/query
 ```
 
 5. **Get All Pools**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -47,6 +52,7 @@ POST http://localhost:2512/query
 ```
 
 6. **Get Pool Events**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -57,6 +63,7 @@ POST http://localhost:2512/query
 ### Pool Ranking Tools
 
 7. **Get Ranked Pools by APR**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -65,6 +72,7 @@ POST http://localhost:2512/query
 ```
 
 8. **Get Ranked Pools by TVL**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -73,6 +81,7 @@ POST http://localhost:2512/query
 ```
 
 9. **Get Filtered Pools**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -83,6 +92,7 @@ POST http://localhost:2512/query
 ### Trade Tools
 
 10. **Get Spot Price**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -91,6 +101,7 @@ POST http://localhost:2512/query
 ```
 
 11. **Get Trade Amount Out**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -99,6 +110,7 @@ POST http://localhost:2512/query
 ```
 
 12. **Get Trade Route**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -107,6 +119,7 @@ POST http://localhost:2512/query
 ```
 
 13. **Get Deposit Transaction**:
+
 ```json
 POST http://localhost:2512/query
 {
@@ -115,10 +128,10 @@ POST http://localhost:2512/query
 ```
 
 14. **Get Withdraw Transaction**:
+
 ```json
 POST http://localhost:2512/query
 {
     "prompt": "Generate a withdrawal transaction for pool 0xmno...345 to withdraw from wallet 0xpqr...678, burning 50 LP tokens with 0.5% slippage"
 }
 ```
-

@@ -13,7 +13,7 @@ const rootRouter: Router = Router();
 rootRouter.get('/', (req: Request, res: Response) => {
   res.json({
     message: 'Atoma Agents API',
-    version: '1.0.0',
+    version: '1.0.0'
   });
 });
 

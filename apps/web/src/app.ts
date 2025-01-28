@@ -32,4 +32,4 @@ app.use(v1routes);
  * @type {Application}
  * @description Express application instance configured with middleware and routes
  */
-export default app; 
+export default app;

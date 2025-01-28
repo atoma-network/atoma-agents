@@ -31,11 +31,15 @@ class Utils {
         return this.finalAnswer('No tool found for the query', query);
       }
 
-      return this.executeTools(selectedTool.selected_tool || '', selectedTool.tool_arguments || []);
+      return this.executeTools(
+        selectedTool.selected_tool || '',
+        selectedTool.tool_arguments || [],
+      );
     } catch (error: unknown) {
       console.error('Error processing query:', error);
       return handleError(error, {
-        reasoning: 'The system encountered an issue while processing your query',
+        reasoning:
+          'The system encountered an issue while processing your query',
         query,
       });
     }
@@ -59,15 +63,12 @@ class Utils {
       .replace('${response}', response)
       .replace('tools', `${tools || null}`);
 
-    const finalAns: any = await atomaChat(
-      this.sdk,
-      [
-        {
-          content: finalPrompt,
-          role: 'assistant',
-        },
-      ]
-    );
+    const finalAns: any = await atomaChat(this.sdk, [
+      {
+        content: finalPrompt,
+        role: 'assistant',
+      },
+    ]);
     const res = finalAns.choices[0].message.content;
     console.log(finalPrompt);
     return JSON.parse(res);

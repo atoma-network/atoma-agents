@@ -26,8 +26,13 @@ class Tools {
   registerTool(
     name: string,
     description: string,
-    parameters: { name: string; type: string; description: string; required: boolean }[],
-    process: (...args: any[]) => any
+    parameters: {
+      name: string;
+      type: string;
+      description: string;
+      required: boolean;
+    }[],
+    process: (...args: any[]) => any,
   ) {
     this.tools.push({ name, description, parameters, process });
   }
@@ -43,19 +48,16 @@ class Tools {
       JSON.stringify(this.getAllTools()),
     );
 
-    const ai: any = await atomaChat(
-      this.sdk,
-      [
-        {
-          content: finalPrompt,
-          role: 'system',
-        },
-        {
-          content: query || '',
-          role: 'user',
-        },
-      ]
-    );
+    const ai: any = await atomaChat(this.sdk, [
+      {
+        content: finalPrompt,
+        role: 'system',
+      },
+      {
+        content: query || '',
+        role: 'user',
+      },
+    ]);
     const res = ai.choices[0].message.content;
 
     const applicableTools: toolResponse[] = JSON.parse(res);

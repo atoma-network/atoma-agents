@@ -27,7 +27,7 @@ async function atomaChat(
     return await sdk.chat.create({
       messages,
       model: model || ATOMA_CHAT_COMPLETIONS_MODEL,
-      maxTokens: 128,
+      maxTokens: 4096,
     });
   } catch (error) {
     // Log the error for monitoring
