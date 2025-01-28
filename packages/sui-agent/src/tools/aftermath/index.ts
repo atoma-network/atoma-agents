@@ -38,32 +38,90 @@ class Tools {
   }
 
   /**
+   * Convert tool parameters to OpenAI function parameters format
+   * @param parameters - Tool parameters
+   * @returns OpenAI function parameters format
+   */
+  private convertToFunctionParameters(parameters: Tool['parameters']) {
+    const properties: Record<string, any> = {};
+    const required: string[] = [];
+
+    parameters.forEach((param) => {
+      properties[param.name] = {
+        type: param.type,
+        description: param.description,
+      };
+      if (param.required) {
+        required.push(param.name);
+      }
+    });
+
+    return {
+      type: 'object',
+      properties,
+      required: required.length > 0 ? required : undefined,
+    };
+  }
+
+  /**
+   * Convert registered tools to OpenAI function format
+   * @returns Array of functions in OpenAI format
+   */
+  private getToolsAsFunctions() {
+    return this.tools.map((tool) => ({
+      name: tool.name,
+      description: tool.description,
+      parameters: this.convertToFunctionParameters(tool.parameters),
+    }));
+  }
+
+  /**
    * Select appropriate tool based on user query
    * @param query - User query
    * @returns Selected tool response or null if no tool found
    */
   async selectAppropriateTool(query: string): Promise<toolResponse | null> {
-    const finalPrompt = this.prompt.replace(
-      '${toolsList}',
-      JSON.stringify(this.getAllTools()),
+    const functions = this.getToolsAsFunctions();
+
+    const ai: any = await atomaChat(
+      this.sdk,
+      [
+        {
+          content: this.prompt,
+          role: 'system',
+        },
+        {
+          content: query || '',
+          role: 'user',
+        },
+      ],
+      undefined,
+      functions,
     );
 
-    const ai: any = await atomaChat(this.sdk, [
-      {
-        content: finalPrompt,
-        role: 'system',
-      },
-      {
-        content: query || '',
-        role: 'user',
-      },
-    ]);
-    const res = ai.choices[0].message.content;
+    const message = ai.choices[0].message;
+    if (!message.function_call) {
+      return null;
+    }
 
-    const applicableTools: toolResponse[] = JSON.parse(res);
-    if (applicableTools.length > 0) return applicableTools[0];
+    const selectedTool = this.tools.find(
+      (tool) => tool.name === message.function_call.name,
+    );
+    if (!selectedTool) {
+      return null;
+    }
 
-    return null;
+    const args = JSON.parse(message.function_call.arguments);
+    const toolArgs = selectedTool.parameters.map((param) => args[param.name]);
+
+    return {
+      success: true,
+      selected_tool: selectedTool.name,
+      response: null,
+      needs_additional_info: false,
+      additional_info_required: null,
+      tool_arguments: toolArgs,
+    };
   }
 
   /**

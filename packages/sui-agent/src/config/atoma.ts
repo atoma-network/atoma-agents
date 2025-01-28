@@ -16,18 +16,30 @@ export function initializeAtomaSDK(bearerAuth: string): AtomaSDK {
  * @param sdk - Initialized Atoma SDK instance
  * @param messages - Array of message objects with content and role
  * @param model - Optional model identifier (defaults to Llama-3.3-70B-Instruct)
+ * @param functions - Optional array of function definitions for function calling
  * @returns Chat completion response
  */
 async function atomaChat(
   sdk: AtomaSDK,
   messages: { content: string; role: string }[],
   model?: string,
+  functions?: Array<{
+    name: string;
+    description: string;
+    parameters: {
+      type: string;
+      properties: Record<string, any>;
+      required?: string[];
+    };
+  }>,
 ) {
   try {
     return await sdk.chat.create({
       messages,
       model: model || ATOMA_CHAT_COMPLETIONS_MODEL,
       maxTokens: 4096,
+      functions: functions,
+      functionCall: functions ? 'auto' : undefined,
     });
   } catch (error) {
     // Log the error for monitoring
@@ -59,7 +71,7 @@ async function atomaChat(
 /**
  * Health check function that returns service status
  * @param sdk - Initialized Atoma SDK instance
- * @returns Boolean indicating if service is healthy
+ * @returns Promise<boolean> indicating if service is healthy
  */
 async function isAtomaHealthy(sdk: AtomaSDK): Promise<boolean> {
   try {
