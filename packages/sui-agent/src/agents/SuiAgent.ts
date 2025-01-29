@@ -20,7 +20,9 @@ class Agents {
 
   constructor(bearerAuth: string) {
     this.tools = new Tools(bearerAuth, intent_agent_prompt);
-    this.utils = new Utils(bearerAuth, final_answer_agent_prompt);
+    this.utils = new Utils(bearerAuth, final_answer_agent_prompt, this.tools);
+    // Register tools when agent is instantiated
+    registerAllTools(this.tools);
   }
 
   /**
@@ -29,8 +31,6 @@ class Agents {
    * @returns IntentAgentResponse containing tool selection and processing details
    */
   async IntentAgent(prompt: string) {
-    // Register all available tools before processing
-    registerAllTools(this.tools);
     const IntentResponse: IntentAgentResponse =
       (await this.tools.selectAppropriateTool(prompt)) as IntentAgentResponse;
     return IntentResponse;
@@ -46,7 +46,12 @@ class Agents {
     intentResponse: IntentAgentResponse,
     query: string,
   ) {
-    return await this.utils.processQuery(query);
+    // Pass both the selected tool name and arguments to processQuery
+    return await this.utils.processQuery(
+      query,
+      intentResponse.selected_tool,
+      intentResponse.tool_arguments,
+    );
   }
 
   /**
@@ -58,11 +63,11 @@ class Agents {
   async SuperVisorAgent(prompt: string) {
     // Process intent
     const res = await this.IntentAgent(prompt);
-    console.log(res);
+    console.log('Intent Response:', res);
 
     // Make decision based on intent
     const finalAnswer = await this.DecisionMakingAgent(res, prompt);
-    console.log(finalAnswer, 'final');
+    console.log('Final Answer:', finalAnswer);
     return finalAnswer;
   }
 }

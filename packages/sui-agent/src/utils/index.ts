@@ -9,32 +9,43 @@ import { ToolArgument } from '../@types/interface';
  * Handles the execution of tools and formatting of final responses
  */
 class Utils {
-  private tools: Tools;
   private sdk: AtomaSDK;
   private prompt: string;
+  private tools: Tools;
 
-  constructor(bearerAuth: string, prompt: string) {
-    this.tools = new Tools(bearerAuth, prompt);
+  constructor(bearerAuth: string, prompt: string, tools?: Tools) {
     this.sdk = new AtomaSDK({ bearerAuth });
     this.prompt = prompt;
+    // Use provided tools instance or create new one
+    this.tools = tools || new Tools(bearerAuth, prompt);
+  }
+
+  /**
+   * Set tools instance
+   * @param tools - Tools instance to use
+   */
+  setTools(tools: Tools) {
+    this.tools = tools;
   }
 
   /**
    * Process user query and execute appropriate tool
    * @param query - User query
+   * @param selectedTool - Name of the tool to execute
+   * @param toolArguments - Arguments to pass to the tool
    * @returns Processed response
    */
-  async processQuery(query: string) {
+  async processQuery(
+    query: string,
+    selectedTool: string | null,
+    toolArguments: ToolArgument[] = [],
+  ) {
     try {
-      const selectedTool = await this.tools.selectAppropriateTool(query);
       if (!selectedTool) {
-        return this.finalAnswer('No tool found for the query', query);
+        return this.finalAnswer('No tool selected for the query', query);
       }
 
-      return this.executeTools(
-        selectedTool.selected_tool || '',
-        selectedTool.tool_arguments || [],
-      );
+      return this.executeTools(selectedTool, toolArguments);
     } catch (error: unknown) {
       console.error('Error processing query:', error);
       return handleError(error, {

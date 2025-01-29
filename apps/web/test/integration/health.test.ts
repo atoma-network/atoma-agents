@@ -15,12 +15,9 @@ describe('Health Check Endpoints', () => {
   });
 
   it('GET / should return API info', async () => {
-    const response = await request(testApp)
-      .get('/')
-      .expect('Content-Type', /json/)
-      .expect(200);
+    const response = await request(testApp).get('/').expect('Content-Type', /json/).expect(200);
 
     expect(response.body).toHaveProperty('message', 'Atoma Agents API');
     expect(response.body).toHaveProperty('version', '1.0.0');
   });
-}); 
+});
