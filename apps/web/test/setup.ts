@@ -3,8 +3,8 @@ import { Server } from 'http';
 import app from '../src/app';
 
 declare global {
-  var testApp: Application;
-  var server: Server;
+  let testApp: Application;
+  let server: Server;
 }
 
 beforeAll(() => {

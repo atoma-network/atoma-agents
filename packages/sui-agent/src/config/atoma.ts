@@ -6,8 +6,6 @@ dotenv.config();
 
 const ATOMA_CHAT_COMPLETIONS_MODEL =
   process.env.ATOMA_CHAT_MODEL || 'meta-llama/Llama-3.3-70B-Instruct';
-const sdkInstance: AtomaSDK | null = null;
-
 /**
  * Initialize Atoma SDK with authentication
  * @param bearerAuth - Bearer auth token for Atoma SDK
