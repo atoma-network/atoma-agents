@@ -9,8 +9,8 @@ import Sidebar from './components/ui/Sidebar';
 const manrope = Manrope({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'CoinSage',
-  description: 'CoinSage is a simple ai agent that allows you to interact with the LLM model.'
+  title: 'AtomaSage',
+  description: 'AtomaSage is a simple ai agent that allows you to interact with the LLM model.'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

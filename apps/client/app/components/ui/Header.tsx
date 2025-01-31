@@ -11,14 +11,14 @@ const Header = () => {
         fontFamily:"Manrope",
       }} className="text-lg text-right md:text-left">Atoma's Coin Sage</p> */}
       <span className="flex items-center">
-        <Image src="/coinSageLogo.webp" width={50} height={50} alt="coinsage logo" />
+        <Image src="/coinSageLogo.png" width={50} height={50} alt="atomasage logo" />
         <p
           style={{
             fontFamily: 'fantasy'
           }}
           className="text-lg text-right font-thin md:text-left"
         >
-          COINSAGE
+          AtomaSage
         </p>
       </span>
 
