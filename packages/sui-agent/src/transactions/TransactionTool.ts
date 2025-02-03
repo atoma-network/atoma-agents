@@ -61,6 +61,9 @@ export async function buildTransferTx(
 ): Promise<TransactionBlock> {
   const tx = new TransactionBlock();
 
+  // Set gas budget
+  tx.setGasBudget(2000000);
+
   // Get coins owned by sender
   const coins = await client.getCoins({
     owner: fromAddress,

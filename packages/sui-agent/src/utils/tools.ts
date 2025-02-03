@@ -1,5 +1,5 @@
-import { Tool, toolResponse } from '../../@types/interface';
-import { atomaChat } from '../../config/atoma';
+import { Tool, toolResponse } from '../@types/interface';
+import { atomaChat } from '../config/atoma';
 import { AtomaSDK } from 'atoma-sdk';
 
 /**

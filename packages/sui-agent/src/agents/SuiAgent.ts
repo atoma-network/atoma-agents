@@ -1,5 +1,5 @@
 import { IntentAgentResponse } from '../@types/interface';
-import Tools from '../tools/aftermath';
+import Tools from '../utils/tools';
 import { registerAllTools } from './ToolRegistry';
 import Utils from '../utils';
 import intent_agent_prompt from '../prompts/intent_agent_prompt';

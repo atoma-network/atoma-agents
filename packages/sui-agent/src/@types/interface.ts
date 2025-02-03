@@ -119,6 +119,9 @@ export const COIN_SYNONYMS: Record<string, string> = {
   // AI and variants
   AI: 'AI',
   AICOIN: 'AI',
+  // WSB and variants
+  WSB: 'WSB',
+  WSBCOIN: 'WSB',
 } as const;
 
 // Mapping of coin symbols to their respective addresses on the Sui network
@@ -158,6 +161,7 @@ export const COIN_ADDRESSES = {
   SUIAI:
     '0x8f6808fcea9d5143e6d1577822fd49e783cb5ad2be042f4295e7fe2d5cb10b31::suiai::SUIAI',
   AI: '0x089de9a53ffd1f9252cf97e32e11b9a242f813e34227362b674b963468ec6620::ai::AI',
+  WSB: '0x4db126eac4fa99207e98db61d968477021fdeae153de3b244bcfbdc468ef0722::wsb::WSB',
 } as const;
 
 // Information about a liquidity pool

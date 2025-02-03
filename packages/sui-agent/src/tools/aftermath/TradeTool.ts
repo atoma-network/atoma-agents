@@ -22,11 +22,30 @@ async function findTokensInPool(
   console.log('Available tokens:', availableTokens);
   console.log('Looking for tokens:', { coinInType, coinOutType });
 
-  // Find matching tokens (case-insensitive and partial match)
+  // Find matching tokens (case-insensitive and handle both full addresses and short names)
   const findToken = (searchToken: string) => {
-    return availableTokens.find((token) =>
-      token.toLowerCase().includes(searchToken.toLowerCase()),
+    // If it's a full address, try exact match first
+    const exactMatch = availableTokens.find(
+      (token) => token.toLowerCase() === searchToken.toLowerCase(),
     );
+    if (exactMatch) return exactMatch;
+
+    // For short names like 'SUI' or 'WSB', look for them in the token addresses
+    return availableTokens.find((token) => {
+      // Normalize the token string to handle malformed addresses
+      const normalizedToken = token.replace(/:{2,}/g, '::').toLowerCase();
+      const parts = normalizedToken.split('::');
+
+      // Get the token name (last part) and clean it
+      const tokenName = parts[parts.length - 1];
+      const searchName = searchToken.toLowerCase();
+
+      return (
+        tokenName === searchName ||
+        tokenName.includes(searchName) ||
+        searchName.includes(tokenName)
+      );
+    });
   };
 
   const matchedCoinIn = findToken(coinInType);
@@ -34,9 +53,7 @@ async function findTokensInPool(
 
   if (!matchedCoinIn || !matchedCoinOut) {
     throw new Error(
-      `Tokens not found in pool. Available tokens: ${availableTokens.join(
-        ', ',
-      )}`,
+      `Tokens not found in pool. Available tokens: ${availableTokens.join(', ')}`,
     );
   }
 

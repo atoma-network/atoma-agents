@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { AtomaSDK } from 'atoma-sdk';
 import { atomaChat } from '../config/atoma';
-import Tools from '../tools/aftermath';
+import Tools from './tools';
 import { ToolArgument } from '../@types/interface';
 
 /**

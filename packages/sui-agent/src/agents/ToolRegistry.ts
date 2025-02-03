@@ -1,4 +1,4 @@
-import Tools from '../tools/aftermath';
+import Tools from '../utils/tools';
 import { getCoinPrice, coinsToPrice } from '../tools/aftermath/PriceTool';
 import { getTokenAPR } from '../tools/aftermath/apr';
 import {
