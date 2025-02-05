@@ -7,21 +7,30 @@ const af = new Aftermath('MAINNET');
 const pools = af.Pools();
 
 /**
- * Processes raw pool data into standardized format
- * @param pool - Raw pool data from Aftermath
- * @param poolId - Unique identifier for the pool
- * @returns Standardized pool information
+ * Processes raw pool data into standardized format.
+ * @param poolInstance - A Pool instance returned from Aftermath containing the pool data.
+ * @param poolId - Unique identifier for the pool.
+ * @returns Standardized pool information.
  */
-async function processPool(pool: Pool, poolId: string): Promise<PoolInfo> {
+async function processPool(
+  poolInstance: Pool,
+  poolId: string,
+): Promise<PoolInfo> {
   try {
+    // Fetch pool metrics using the poolId
     const metrics = await pools.getPoolsStats({ poolIds: [poolId] });
     const poolMetrics = metrics[0];
 
-    // Extract token information
-    const tokens = Object.keys(pool.pool.coins || {});
+    // Extract tokens (coin types) from the pool object.
+    // Here we assume that the underlying pool data is stored in the `pool` property.
+    const poolData = poolInstance.pool;
+    const tokens = Object.keys(poolData.coins || {});
+
+    // For each token, extract its normalized balance.
     const reserves = tokens.map((token) => {
-      const coinData = pool.pool.coins[token];
-      return BigInt(coinData.normalizedBalance || 0);
+      // Use optional chaining to guard against missing data.
+      const coinData = poolData.coins[token];
+      return BigInt(coinData?.normalizedBalance || 0);
     });
 
     return {
@@ -30,7 +39,7 @@ async function processPool(pool: Pool, poolId: string): Promise<PoolInfo> {
       reserves,
       fee: poolMetrics?.fees || 0,
       tvl: poolMetrics?.tvl || 0,
-      apr: (poolMetrics?.apr || 0) * 100,
+      apr: (poolMetrics?.apr || 0) * 100, // Convert to percentage if needed
     };
   } catch (error: unknown) {
     console.error(`Error processing pool ${poolId}:`, error);
@@ -46,17 +55,17 @@ async function processPool(pool: Pool, poolId: string): Promise<PoolInfo> {
 }
 
 /**
- * Gets detailed information about a specific pool
- * @param poolId - Unique identifier for the pool
- * @returns JSON string containing pool details or error information
+ * Gets detailed information about a specific pool.
+ * @param poolId - Unique identifier for the pool.
+ * @returns JSON string containing pool details or error information.
  */
 export async function getPool(
   ...args: (string | number | bigint | boolean)[]
 ): Promise<string> {
   const poolId = args[0] as string;
   try {
-    const pool = await pools.getPool({ objectId: poolId });
-    if (!pool) {
+    const poolInstance = await pools.getPool({ objectId: poolId });
+    if (!poolInstance) {
       return JSON.stringify([
         handleError('Pool not found', {
           reasoning: 'Pool not found with the specified ID.',
@@ -64,7 +73,7 @@ export async function getPool(
         }),
       ]);
     }
-    const processedPool = await processPool(pool, poolId);
+    const processedPool = await processPool(poolInstance, poolId);
     return JSON.stringify([
       {
         reasoning:
@@ -86,19 +95,21 @@ export async function getPool(
 }
 
 /**
- * Retrieves information about all available pools
- * @returns JSON string containing all pool information
+ * Retrieves information about all available pools.
+ * @returns JSON string containing all pool information.
  */
 export async function getAllPools(): Promise<string> {
   try {
     const allPools = await pools.getAllPools();
     const processedPools = await Promise.all(
-      allPools.map(async (pool) => {
-        if (!pool.pool?.objectId) return null;
-        return processPool(pool, pool.pool.objectId);
+      allPools.map(async (poolInstance) => {
+        // Ensure the pool instance has an objectId defined.
+        if (!poolInstance.pool?.objectId) return null;
+        return processPool(poolInstance, poolInstance.pool.objectId);
       }),
     );
 
+    // Filter out any null or empty pools.
     const validPools = processedPools.filter(
       (pool): pool is PoolInfo => pool !== null && pool.tokens.length > 0,
     );
@@ -124,19 +135,19 @@ export async function getAllPools(): Promise<string> {
 }
 
 /**
- * Gets deposit or withdrawal events for a specific pool
- * @param poolId - Unique identifier for the pool
- * @param eventType - Type of events to fetch ("deposit" or "withdraw")
- * @param limit - Maximum number of events to return
- * @returns JSON string containing event information
+ * Gets deposit or withdrawal events for a specific pool.
+ * @param poolId - Unique identifier for the pool.
+ * @param eventType - Type of events to fetch ("deposit" or "withdraw").
+ * @param limit - Maximum number of events to return.
+ * @returns JSON string containing event information.
  */
 export async function getPoolEvents(
   ...args: (string | number | bigint | boolean)[]
 ): Promise<string> {
   const [poolId, eventType, limit] = args as [string, string, number];
   try {
-    const pool = await pools.getPool({ objectId: poolId });
-    if (!pool) {
+    const poolInstance = await pools.getPool({ objectId: poolId });
+    if (!poolInstance) {
       return JSON.stringify([
         handleError('Pool not found', {
           reasoning: 'Pool not found with the specified ID.',
@@ -145,10 +156,11 @@ export async function getPoolEvents(
       ]);
     }
 
+    // Depending on the event type, fetch the appropriate events.
     const eventData =
       eventType === 'deposit'
-        ? await pool.getDepositEvents({ limit })
-        : await pool.getWithdrawEvents({ limit });
+        ? await poolInstance.getDepositEvents({ limit })
+        : await poolInstance.getWithdrawEvents({ limit });
 
     return JSON.stringify([
       {
@@ -170,23 +182,23 @@ export async function getPoolEvents(
 }
 
 /**
- * Gets ranked pools by specified metric
- * @param metric - Metric to rank by (apr, tvl, fees, volume)
- * @param limit - Maximum number of pools to return
- * @param order - Sort order (ascending or descending)
- * @returns JSON string containing ranked pool information
+ * Gets ranked pools by specified metric.
+ * @param metric - Metric to rank by (apr, tvl, fees, volume).
+ * @param limit - Maximum number of pools to return.
+ * @param order - Sort order (ascending or descending).
+ * @returns JSON string containing ranked pool information.
  */
 export async function getRankedPools(
   ...args: (string | number | bigint | boolean)[]
 ): Promise<string> {
   const [metric, limit, order] = args as [string, number, string];
   try {
-    // Fetch and process all pools
+    // Fetch and process all pools.
     const allPools = await pools.getAllPools();
     const processedPools = await Promise.all(
-      allPools.map(async (pool) => {
-        if (!pool.pool?.objectId) return null;
-        return processPool(pool, pool.pool.objectId);
+      allPools.map(async (poolInstance) => {
+        if (!poolInstance.pool?.objectId) return null;
+        return processPool(poolInstance, poolInstance.pool.objectId);
       }),
     );
 
@@ -194,7 +206,7 @@ export async function getRankedPools(
       (pool): pool is PoolInfo => pool !== null && pool.tokens.length > 0,
     );
 
-    // Sort pools based on the specified metric
+    // Sort pools based on the specified metric.
     const sortedPools = validPools.sort((a, b) => {
       let valueA: number, valueB: number;
 
@@ -223,10 +235,10 @@ export async function getRankedPools(
       return order === 'desc' ? valueB - valueA : valueA - valueB;
     });
 
-    // Take only the requested number of pools
+    // Take only the requested number of pools.
     const topPools = sortedPools.slice(0, limit);
 
-    // Format the response with ranking information
+    // Format the response with ranking information.
     const rankedPools = topPools.map((pool, index) => ({
       rank: index + 1,
       ...pool,
@@ -266,38 +278,38 @@ export async function getRankedPools(
 }
 
 /**
- * Gets pools filtered by specific criteria
- * @param minTvl - Minimum Total Value Locked requirement
- * @param minApr - Minimum Annual Percentage Rate requirement
- * @param tokens - Array of token symbols that must be in the pool
- * @returns JSON string containing filtered pool information
+ * Gets pools filtered by specific criteria.
+ * @param minTvl - Minimum Total Value Locked requirement.
+ * @param minApr - Minimum Annual Percentage Rate requirement.
+ * @param tokens - Array of token symbols that must be in the pool.
+ * @returns JSON string containing filtered pool information.
  */
 export async function getFilteredPools(
   ...args: (string | number | bigint | boolean)[]
 ): Promise<string> {
   const [minTvl, minApr, tokens] = args as [number, number, string[]];
   try {
-    // Fetch and process all pools
+    // Fetch and process all pools.
     const allPools = await pools.getAllPools();
     const processedPools = await Promise.all(
-      allPools.map(async (pool) => {
-        if (!pool.pool?.objectId) return null;
-        return processPool(pool, pool.pool.objectId);
+      allPools.map(async (poolInstance) => {
+        if (!poolInstance.pool?.objectId) return null;
+        return processPool(poolInstance, poolInstance.pool.objectId);
       }),
     );
 
-    // Apply filters
+    // Apply filters.
     const filteredPools = processedPools.filter((pool): pool is PoolInfo => {
       if (!pool || pool.tokens.length === 0) return false;
 
-      // Apply TVL filter
+      // Apply TVL filter.
       if (minTvl && pool.tvl < minTvl) return false;
 
-      // Apply APR filter
+      // Apply APR filter.
       if (minApr && pool.apr < minApr) return false;
 
-      // Apply token filter
-      if (tokens) {
+      // Apply token filter.
+      if (tokens && tokens.length > 0) {
         const poolTokens = pool.tokens.map((t) => t.toLowerCase());
         const hasRequiredTokens = tokens.every((token) =>
           poolTokens.some((poolToken) =>
@@ -310,7 +322,7 @@ export async function getFilteredPools(
       return true;
     });
 
-    // Format the response with detailed metrics
+    // Format the response with detailed metrics.
     const formattedPools = filteredPools.map((pool) => ({
       ...pool,
       metrics: {
@@ -341,7 +353,7 @@ export async function getFilteredPools(
         status: 'success',
         query: `Retrieved pools with${minTvl ? ` min TVL $${minTvl}` : ''}${
           minApr ? ` min APR ${minApr}%` : ''
-        }${tokens ? ` containing tokens ${tokens.join(', ')}` : ''}`,
+        }${tokens && tokens.length > 0 ? ` containing tokens ${tokens.join(', ')}` : ''}`,
         errors: [],
       },
     ]);
