@@ -138,12 +138,12 @@ importers:
 
   packages/sui-agent:
     dependencies:
-      '@mysten/sui.js':
-        specifier: ^0.54.1
-        version: 0.54.1(typescript@5.7.3)
+      '@mysten/sui':
+        specifier: 1.1.0
+        version: 1.1.0(typescript@5.7.3)
       aftermath-ts-sdk:
         specifier: ^1.2.49
-        version: 1.2.49(@mysten/sui.js@0.54.1(typescript@5.7.3))(@mysten/sui@1.21.1(typescript@5.7.3))
+        version: 1.2.49(@mysten/sui.js@0.54.1(typescript@5.7.3))(@mysten/sui@1.1.0(typescript@5.7.3))
       atoma-sdk:
         specifier: github:atoma-network/atoma-sdk-typescript
         version: https://codeload.github.com/atoma-network/atoma-sdk-typescript/tar.gz/6c3f14dc4850fc516c3cb543e5d99b13b13eac82(zod@3.24.1)
@@ -6130,6 +6130,25 @@ snapshots:
       - '@gql.tada/vue-support'
       - typescript
 
+  '@mysten/sui@1.1.0(typescript@5.7.3)':
+    dependencies:
+      '@graphql-typed-document-node/core': 3.2.0(graphql@16.10.0)
+      '@mysten/bcs': 1.0.2
+      '@noble/curves': 1.8.1
+      '@noble/hashes': 1.7.1
+      '@scure/bip32': 1.6.2
+      '@scure/bip39': 1.5.4
+      '@suchipi/femver': 1.0.0
+      bech32: 2.0.0
+      gql.tada: 1.8.10(graphql@16.10.0)(typescript@5.7.3)
+      graphql: 16.10.0
+      tweetnacl: 1.0.3
+      valibot: 0.25.0
+    transitivePeerDependencies:
+      - '@gql.tada/svelte-support'
+      - '@gql.tada/vue-support'
+      - typescript
+
   '@mysten/sui@1.2.0(typescript@5.1.3)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.10.0)
@@ -6160,26 +6179,6 @@ snapshots:
       '@suchipi/femver': 1.0.0
       bech32: 2.0.0
       gql.tada: 1.8.10(graphql@16.10.0)(typescript@5.1.3)
-      graphql: 16.10.0
-      jose: 5.9.6
-      poseidon-lite: 0.2.1
-      valibot: 0.36.0
-    transitivePeerDependencies:
-      - '@gql.tada/svelte-support'
-      - '@gql.tada/vue-support'
-      - typescript
-
-  '@mysten/sui@1.21.1(typescript@5.7.3)':
-    dependencies:
-      '@graphql-typed-document-node/core': 3.2.0(graphql@16.10.0)
-      '@mysten/bcs': 1.3.0
-      '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
-      '@scure/bip32': 1.6.2
-      '@scure/bip39': 1.5.4
-      '@suchipi/femver': 1.0.0
-      bech32: 2.0.0
-      gql.tada: 1.8.10(graphql@16.10.0)(typescript@5.7.3)
       graphql: 16.10.0
       jose: 5.9.6
       poseidon-lite: 0.2.1
@@ -7002,9 +7001,9 @@ snapshots:
 
   acorn@8.14.0: {}
 
-  aftermath-ts-sdk@1.2.49(@mysten/sui.js@0.54.1(typescript@5.7.3))(@mysten/sui@1.21.1(typescript@5.7.3)):
+  aftermath-ts-sdk@1.2.49(@mysten/sui.js@0.54.1(typescript@5.7.3))(@mysten/sui@1.1.0(typescript@5.7.3)):
     dependencies:
-      '@mysten/sui': 1.21.1(typescript@5.7.3)
+      '@mysten/sui': 1.1.0(typescript@5.7.3)
       '@mysten/sui.js': 0.54.1(typescript@5.7.3)
       '@pythnetwork/pyth-sui-js': 1.2.5
       bn.js: 5.2.1

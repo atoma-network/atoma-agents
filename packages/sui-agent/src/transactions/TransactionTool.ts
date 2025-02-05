@@ -1,10 +1,10 @@
-import { SuiClient, SuiHTTPTransport } from '@mysten/sui.js/client';
+import { SuiClient, SuiHTTPTransport } from '@mysten/sui/client';
 import {
-  TransactionBlock,
+  Transaction,
   TransactionObjectArgument,
-} from '@mysten/sui.js/transactions';
+} from '@mysten/sui/transactions';
 import { TokenBalance, NETWORK_CONFIG } from '../@types/interface';
-import { Signer } from '@mysten/sui.js/cryptography';
+import { Signer } from '@mysten/sui/cryptography';
 
 /** --------------------------------------------------------------------------
  * Core Transaction Infrastructure
@@ -31,8 +31,8 @@ export function initSuiClient(
  * @param gasBudget - Maximum gas to spend (in MIST)
  * @returns Initialized TransactionBlock
  */
-export function createPTB(gasBudget = 2000000): TransactionBlock {
-  const tx = new TransactionBlock();
+export function createPTB(gasBudget = 2000000): Transaction {
+  const tx = new Transaction();
   tx.setGasBudget(gasBudget);
   return tx;
 }
@@ -58,8 +58,8 @@ export async function buildTransferTx(
   toAddress: string,
   tokenType: string,
   amount: bigint,
-): Promise<TransactionBlock> {
-  const tx = new TransactionBlock();
+): Promise<Transaction> {
+  const tx = new Transaction();
 
   // Set gas budget
   tx.setGasBudget(2000000);
@@ -76,8 +76,8 @@ export async function buildTransferTx(
 
   // Select coin and perform transfer
   const coin = tx.object(coins.data[0].coinObjectId);
-  const [splitCoin] = tx.splitCoins(coin, [tx.pure(amount)]);
-  tx.transferObjects([splitCoin], tx.pure(toAddress));
+  const [splitCoin] = tx.splitCoins(coin, [tx.pure.u64(amount)]);
+  tx.transferObjects([splitCoin], tx.pure.address(toAddress));
 
   return tx;
 }
@@ -96,13 +96,13 @@ export async function buildMultiTransferTx(
   from: string,
   to: string,
   transfers: TokenBalance[],
-): Promise<TransactionBlock> {
-  const tx = new TransactionBlock();
+): Promise<Transaction> {
+  const tx = new Transaction();
 
   // Process each transfer
   for (const transfer of transfers) {
-    const [coin] = tx.splitCoins(tx.gas, [tx.pure(transfer.amount)]);
-    tx.transferObjects([coin], tx.pure(to));
+    const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(transfer.amount)]);
+    tx.transferObjects([coin], tx.pure.address(to));
   }
 
   return tx;
@@ -122,7 +122,7 @@ export async function buildMultiTransferTx(
  */
 export async function estimateGas(
   client: SuiClient,
-  tx: TransactionBlock,
+  tx: Transaction,
 ): Promise<bigint> {
   const estimate = await client.dryRunTransactionBlock({
     transactionBlock: tx.serialize(),
@@ -140,12 +140,12 @@ export async function estimateGas(
  */
 export async function executeTransaction(
   client: SuiClient,
-  tx: TransactionBlock,
+  tx: Transaction,
   signer: Signer,
 ) {
   try {
-    const result = await client.signAndExecuteTransactionBlock({
-      transactionBlock: tx,
+    const result = await client.signAndExecuteTransaction({
+      transaction: tx,
       signer,
       options: {
         showEffects: true,
@@ -180,11 +180,11 @@ type MoveTarget = `${string}::${string}::${string}`;
  * addMoveCall(ptb, "0x2::sui::pay", [], [recipient, amount]);
  */
 export function addMoveCall(
-  tx: TransactionBlock,
+  tx: Transaction,
   target: MoveTarget,
   typeArguments: string[] = [],
   args: (string | number | boolean | bigint)[] = [],
-): TransactionBlock {
+): Transaction {
   tx.moveCall({
     target,
     typeArguments,
@@ -192,7 +192,10 @@ export function addMoveCall(
       if (typeof arg === 'string' && arg.startsWith('0x')) {
         return tx.object(arg);
       }
-      return tx.pure(arg);
+      if (typeof arg === 'bigint') {
+        return tx.pure.u64(arg);
+      }
+      return tx.pure.address(arg as string);
     }),
   });
   return tx;
@@ -218,7 +221,7 @@ export async function createMergeCoinsTx(
   coinType: string,
   walletAddress: string,
   maxCoins = 10,
-): Promise<TransactionBlock> {
+): Promise<Transaction> {
   // Fetch available coins
   const coins = await client.getCoins({
     owner: walletAddress,
@@ -230,7 +233,7 @@ export async function createMergeCoinsTx(
   }
 
   // Create merge transaction
-  const tx = new TransactionBlock();
+  const tx = new Transaction();
   const coinsToMerge = coins.data.slice(0, maxCoins);
   const primaryCoin = coinsToMerge[0].coinObjectId;
   const mergeCoins = coinsToMerge.slice(1).map((coin) => coin.coinObjectId);
@@ -248,14 +251,14 @@ export async function createMergeCoinsTx(
  * @returns Transaction block ready for sponsor signature
  */
 export async function createSponsoredTx(
-  tx: TransactionBlock,
+  tx: Transaction,
   sender: string,
   sponsor: string,
   sponsorCoins: { objectId: string; version: string; digest: string }[],
-): Promise<TransactionBlock> {
+): Promise<Transaction> {
   // Extract transaction kind
   const kindBytes = await tx.build({ onlyTransactionKind: true });
-  const sponsoredTx = TransactionBlock.fromKind(kindBytes);
+  const sponsoredTx = Transaction.fromKind(kindBytes);
 
   // Set up sponsored transaction
   sponsoredTx.setSender(sender);
@@ -273,12 +276,12 @@ export async function createSponsoredTx(
  * @returns Move vector input for transaction
  */
 export function createMoveVec(
-  tx: TransactionBlock,
+  tx: Transaction,
   elements: (string | TransactionObjectArgument)[],
   type?: string,
 ) {
   return tx.makeMoveVec({
-    objects: elements,
+    elements,
     type,
   });
 }
@@ -303,10 +306,10 @@ export class TransactionAgent {
    * @param recipient - Recipient address
    * @returns Prepared transaction block
    */
-  buildTransferTx(amount: bigint, recipient: string): TransactionBlock {
-    const tx = new TransactionBlock();
-    const [coin] = tx.splitCoins(tx.gas, [tx.pure(amount)]);
-    tx.transferObjects([coin], tx.pure(recipient));
+  buildTransferTx(amount: bigint, recipient: string): Transaction {
+    const tx = new Transaction();
+    const [coin] = tx.splitCoins(tx.gas, [tx.pure.u64(amount)]);
+    tx.transferObjects([coin], tx.pure.address(recipient));
     return tx;
   }
 
@@ -319,8 +322,8 @@ export class TransactionAgent {
   buildMergeCoinsTx(
     destinationCoin: string,
     sourceCoins: string[],
-  ): TransactionBlock {
-    const tx = new TransactionBlock();
+  ): Transaction {
+    const tx = new Transaction();
     tx.mergeCoins(
       tx.object(destinationCoin),
       sourceCoins.map((coin) => tx.object(coin)),
@@ -339,8 +342,8 @@ export class TransactionAgent {
     target: `${string}::${string}::${string}`,
     typeArguments: string[],
     args: (string | number | boolean | bigint)[],
-  ): TransactionBlock {
-    const tx = new TransactionBlock();
+  ): Transaction {
+    const tx = new Transaction();
     tx.moveCall({
       target,
       typeArguments,
@@ -348,7 +351,10 @@ export class TransactionAgent {
         if (typeof arg === 'string' && arg.startsWith('0x')) {
           return tx.object(arg);
         }
-        return tx.pure(arg);
+        if (typeof arg === 'bigint') {
+          return tx.pure.u64(arg);
+        }
+        return tx.pure.address(arg as string);
       }),
     });
     return tx;
@@ -363,13 +369,13 @@ export class TransactionAgent {
    * @returns Sponsored transaction block
    */
   async createSponsoredTx(
-    tx: TransactionBlock,
+    tx: Transaction,
     sender: string,
     sponsor: string,
     sponsorCoins: { objectId: string; version: string; digest: string }[],
-  ): Promise<TransactionBlock> {
+  ): Promise<Transaction> {
     const kindBytes = await tx.build({ onlyTransactionKind: true });
-    const sponsoredTx = TransactionBlock.fromKind(kindBytes);
+    const sponsoredTx = Transaction.fromKind(kindBytes);
 
     sponsoredTx.setSender(sender);
     sponsoredTx.setGasOwner(sponsor);
@@ -386,12 +392,12 @@ export class TransactionAgent {
    * @returns Move vector
    */
   createMoveVec(
-    tx: TransactionBlock,
+    tx: Transaction,
     elements: (string | TransactionObjectArgument)[],
     type?: string,
   ) {
     return tx.makeMoveVec({
-      objects: elements,
+      elements,
       type,
     });
   }
@@ -401,7 +407,7 @@ export class TransactionAgent {
    * @param tx - Transaction block to estimate
    * @returns Estimated gas cost in MIST
    */
-  async estimateGas(tx: TransactionBlock): Promise<bigint> {
+  async estimateGas(tx: Transaction): Promise<bigint> {
     try {
       const dryRunResult = await this.client.dryRunTransactionBlock({
         transactionBlock: tx.serialize(),
@@ -420,7 +426,7 @@ export class TransactionAgent {
    * @returns Transaction block with effects and events
    */
   async waitForTransaction(digest: string) {
-    return this.client.waitForTransactionBlock({
+    return this.client.waitForTransaction({
       digest,
       options: {
         showEffects: true,

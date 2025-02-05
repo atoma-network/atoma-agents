@@ -16,7 +16,7 @@ import {
   createMergeCoinsTx,
   estimateGas,
 } from '../transactions/TransactionTool';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { Transaction } from '@mysten/sui/transactions';
 
 // Transaction wrapper functions
 export async function transferCoinWrapper(
@@ -102,9 +102,9 @@ export async function mergeCoinsWrapper(
 }
 
 export async function estimateGasWrapper(
-  ...args: (string | number | bigint | boolean | TransactionBlock)[]
+  ...args: (string | number | bigint | boolean | Transaction)[]
 ): Promise<string> {
-  const [transaction] = args as [TransactionBlock];
+  const [transaction] = args as [Transaction];
   const client = initSuiClient();
   const gasEstimate = await estimateGas(client, transaction);
   return JSON.stringify([

@@ -16,12 +16,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@mysten/sui.js": "^0.54.1",
+    "@mysten/sui": "1.1.0",
     "aftermath-ts-sdk": "^1.2.49",
     "atoma-sdk": "github:atoma-network/atoma-sdk-typescript",
     "axios": "^1.7.9",
-    "typescript": "^5.7.3",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "typescript": "^5.7.3"
   },
   "devDependencies": {
     "@types/dotenv": "^8.2.0",

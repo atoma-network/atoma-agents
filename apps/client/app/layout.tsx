@@ -16,7 +16,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`h-[100%] ${manrope.className} bg-gray-100`}>
+      <body className={`h-[100%] ${manrope.className} bg-gradient-to-b from-white to-gray-100`}>
         <Providers>
           <Sidebar>
             <div className="m-4">

@@ -1,6 +1,6 @@
 import { Aftermath } from 'aftermath-ts-sdk';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { SuiClient } from '@mysten/sui.js/client';
+import { Transaction } from '@mysten/sui/transactions';
+import { SuiClient } from '@mysten/sui/client';
 import { handleError } from '../../utils';
 import { initSuiClient } from '../../transactions/TransactionTool';
 import { getRankedPools } from './PoolTool';
@@ -70,8 +70,8 @@ export async function buildMultiPoolDepositTx(
   walletAddress: string,
   poolDeposits: Array<{ poolId: string; amount: bigint }>,
   slippage = 0.01,
-): Promise<TransactionBlock> {
-  const tx = new TransactionBlock();
+): Promise<Transaction> {
+  const tx = new Transaction();
   tx.setGasBudget(2000000 * poolDeposits.length); // Scale gas budget with number of deposits
 
   for (const deposit of poolDeposits) {
@@ -105,7 +105,7 @@ export async function buildMultiPoolDepositTx(
       arguments: depositTx.arguments.map((arg) =>
         typeof arg === 'string' && arg.startsWith('0x')
           ? tx.object(arg)
-          : tx.pure(arg),
+          : tx.pure.address(arg as string),
       ),
       typeArguments: depositTx.typeArguments,
     });
@@ -195,8 +195,8 @@ export async function buildMultiPoolWithdrawTx(
   walletAddress: string,
   poolWithdraws: Array<{ poolId: string; lpAmount: bigint }>,
   slippage = 0.01,
-): Promise<TransactionBlock> {
-  const tx = new TransactionBlock();
+): Promise<Transaction> {
+  const tx = new Transaction();
   tx.setGasBudget(2000000 * poolWithdraws.length);
 
   for (const withdraw of poolWithdraws) {
@@ -221,7 +221,7 @@ export async function buildMultiPoolWithdrawTx(
       arguments: withdrawTx.arguments.map((arg) =>
         typeof arg === 'string' && arg.startsWith('0x')
           ? tx.object(arg)
-          : tx.pure(arg),
+          : tx.pure.address(arg as string),
       ),
       typeArguments: withdrawTx.typeArguments,
     });
