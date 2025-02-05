@@ -27,6 +27,7 @@ import {
   getAfSuiExchangeRateWrapper,
   getStakeTransactionWrapper,
 } from '../utils/toolWrappers';
+import { initializeNaviClient, getNaviAccount } from '../tools/navi';
 
 /* 
 format for tool registry is:
@@ -564,5 +565,46 @@ export function registerAllTools(tools: Tools) {
       },
     ],
     getStakeTransactionWrapper,
+  );
+
+  // NAVI Tools
+  tools.registerTool(
+    'initialize_navi',
+    'Tool to initialize NAVI SDK client',
+    [
+      {
+        name: 'mnemonic',
+        type: 'string',
+        description: 'Mnemonic for account generation (optional)',
+        required: false,
+      },
+      {
+        name: 'networkType',
+        type: 'string',
+        description: "Network type ('mainnet' or custom RPC)",
+        required: true,
+      },
+      {
+        name: 'numberOfAccounts',
+        type: 'number',
+        description: 'Number of accounts to generate',
+        required: false,
+      },
+    ],
+    initializeNaviClient,
+  );
+
+  tools.registerTool(
+    'get_navi_account',
+    'Tool to get NAVI account information',
+    [
+      {
+        name: 'accountIndex',
+        type: 'number',
+        description: 'Index of the account to retrieve',
+        required: true,
+      },
+    ],
+    getNaviAccount,
   );
 }
