@@ -1,4 +1,4 @@
-import { Aftermath, Pool } from 'aftermath-ts-sdk';
+import { Aftermath } from 'aftermath-ts-sdk';
 import { Transaction } from '@mysten/sui/transactions';
 import { SuiClient } from '@mysten/sui/client';
 import { handleError } from '../../utils';
