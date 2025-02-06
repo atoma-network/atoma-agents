@@ -20,7 +20,7 @@ const handleQuery = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-    // TODO: Implement query handling with sui-agent
+
     const result = await suiAgent.SuperVisorAgent(query);
     res.status(200).json(result);
   } catch (error) {

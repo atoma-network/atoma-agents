@@ -2,20 +2,20 @@ import { TokenBalance } from '../@types/interface';
 import {
   depositIntoTopPools,
   buildMultiPoolWithdrawTx,
-} from '../tools/aftermath/PoolTransactionTool';
+} from '../protocols/aftermath/PoolTransactionTool';
 import {
   getStakingPositions,
   getSuiTvl,
   getAfSuiExchangeRate,
   getStakeTransaction,
-} from '../tools/aftermath/staking';
+} from '../protocols/aftermath/staking';
 import {
   initSuiClient,
   buildTransferTx,
   buildMultiTransferTx,
   createMergeCoinsTx,
   estimateGas,
-} from '../transactions/TransactionTool';
+} from '../transactions/Transaction';
 import { Transaction } from '@mysten/sui/transactions';
 
 // Transaction wrapper functions

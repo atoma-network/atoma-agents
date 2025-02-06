@@ -45,6 +45,7 @@ class Tools {
    * @returns Selected tool response or null if no tool found
    */
   async selectAppropriateTool(query: string): Promise<toolResponse | null> {
+    console.log(this.getAllTools());
     const finalPrompt = this.prompt.replace(
       '${toolsList}',
       JSON.stringify(this.getAllTools()),

@@ -2,7 +2,7 @@ import { Aftermath } from 'aftermath-ts-sdk';
 import { Transaction } from '@mysten/sui/transactions';
 import { SuiClient } from '@mysten/sui/client';
 import { handleError } from '../../utils';
-import { initSuiClient } from '../../transactions/TransactionTool';
+import { initSuiClient } from '../../transactions/Transaction';
 import { getRankedPools } from './PoolTool';
 
 // Initialize Aftermath SDK for mainnet

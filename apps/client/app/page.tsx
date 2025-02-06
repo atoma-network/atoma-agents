@@ -38,6 +38,7 @@ export default function Home() {
 
         console.log(modifiedMessage, 'modified');
         const response = await api.post('/query', { query: modifiedMessage });
+        console.log(response);
         const res = response.data[0];
         console.log(res);
         let llmResponse = '';
