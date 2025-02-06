@@ -205,3 +205,10 @@ export const NETWORK_CONFIG: NetworkConfigs = {
     faucet: 'https://faucet.testnet.sui.io/gas',
   },
 };
+
+interface Liquidation {
+  user: string;
+  liquidation_sender: string;
+  [key: string]: unknown; // Uses unknown instead of any
+}
+export type { Liquidation };

@@ -1,6 +1,7 @@
 import { NAVISDKClient } from 'navi-sdk';
 import { handleError } from '../../utils';
 import sentioApi from '../../config/sentio';
+import { Liquidation } from '../../@types/interface';
 // Initialize NAVI SDK client
 let naviClient: NAVISDKClient | null = null;
 
@@ -14,7 +15,7 @@ let naviClient: NAVISDKClient | null = null;
 export async function initializeNaviClient(
   ...args: (string | number | bigint | boolean)[]
 ): Promise<string> {
-  let [mnemonic, networkType, numberOfAccounts] = args as [
+  const [mnemonic, networkType, numberOfAccounts] = args as [
     string,
     string,
     number,
@@ -26,7 +27,7 @@ export async function initializeNaviClient(
       networkType,
       numberOfAccounts: numberOfAccounts || 5,
     });
-    let account = naviClient.accounts[0];
+    const account = naviClient.accounts[0];
     return JSON.stringify([
       {
         reasoning: 'Successfully initialized NAVI SDK client',
@@ -127,9 +128,11 @@ async function checkUserLiquidations(address: string) {
     const liquidations = response.data;
     console.log(liquidations.result.rows, 'liquidations');
     return {
-      asUser: liquidations.result.rows.filter((l: any) => l.user === address),
+      asUser: liquidations.result.rows.filter(
+        (l: Liquidation) => l.user === address,
+      ),
       asLiquidator: liquidations.result.rows.filter(
-        (l: any) => l.liquidation_sender === address,
+        (l: Liquidation) => l.liquidation_sender === address,
       ),
       totalLiquidations: liquidations.length,
     };
@@ -148,8 +151,16 @@ async function checkUserLiquidations(address: string) {
 }
 export async function checkUserLiquidationStatusTool(
   ...args: (string | number | bigint | boolean)[]
-): Promise<any> {
+): Promise<string> {
   const [walletAddress] = args as [string];
-  return checkUserLiquidations(walletAddress);
+  const result = await checkUserLiquidations(walletAddress);
+  return JSON.stringify([
+    {
+      reasoning: 'Successfully retrieved liquidation status',
+      response: JSON.stringify(result),
+      status: 'success',
+      query: `Check liquidation status for ${walletAddress}`,
+      errors: [],
+    },
+  ]);
 }
-// Add more NAVI-specific functions here...
