@@ -211,4 +211,5 @@ interface Liquidation {
   liquidation_sender: string;
   [key: string]: unknown; // Uses unknown instead of any
 }
+
 export type { Liquidation };

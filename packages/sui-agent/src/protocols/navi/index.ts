@@ -12,6 +12,7 @@ let naviClient: NAVISDKClient | null = null;
  * @param numberOfAccounts - Number of accounts to generate
  * @returns JSON string with initialization status
  */
+
 export async function initializeNaviClient(
   ...args: (string | number | bigint | boolean)[]
 ): Promise<string> {
@@ -149,6 +150,7 @@ async function checkUserLiquidations(address: string) {
     };
   }
 }
+
 export async function checkUserLiquidationStatusTool(
   ...args: (string | number | bigint | boolean)[]
 ): Promise<string> {
