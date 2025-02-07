@@ -25,4 +25,5 @@ sentioApi.interceptors.response.use(
   },
 );
 
+
 export default sentioApi;

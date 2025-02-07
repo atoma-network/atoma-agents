@@ -21,6 +21,7 @@
     "atoma-sdk": "github:atoma-network/atoma-sdk-typescript",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
+    "mongoose": "^8.10.0",
     "navi-sdk": "^1.4.24",
     "typescript": "^5.7.3"
   },
