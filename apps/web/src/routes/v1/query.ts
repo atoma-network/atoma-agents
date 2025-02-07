@@ -15,17 +15,19 @@ queryRouter.get('/health', (req: Request, res: Response) => {
 // Query endpoint
 const handleQuery = async (req: Request, res: Response): Promise<void> => {
   try {
+    
     const { query, walletAddress } = req.body;
+   
 
     if (!query) {
       res.status(400).json({
         error: 'Missing query in request body'
       });
+      
       return;
     }
-
     // Get agent response first
-    const result = await suiAgent.SuperVisorAgent(query);
+    const result = await suiAgent.SuperVisorAgent(query,walletAddress);
 
     // Only try to save chat history if walletAddress is provided
     if (walletAddress) {

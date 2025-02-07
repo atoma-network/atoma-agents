@@ -4,7 +4,6 @@ import api from './lib/api';
 import { useWallet } from '@suiet/wallet-kit';
 import JSONFormatter from './utils/JSONFormatter';
 
-import { keywords } from './data';
 
 import Messages from './components/sections/Messages';
 import SampleQuestions from './components/sections/SampleQuestions';
@@ -21,8 +20,8 @@ export default function Home() {
   useEffect(() => {
     if (address && connected) {
       loadChatHistory();
-      // Send initial wallet connection message
-      handleSend(`Connected wallet: ${address}`);
+      // // Send initial wallet connection message
+      // handleSend(`Connected wallet: ${address}`);
     }
   }, [address, connected]);
 

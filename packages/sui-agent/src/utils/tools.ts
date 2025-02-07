@@ -44,16 +44,17 @@ class Tools {
    * @param query - User query
    * @returns Selected tool response or null if no tool found
    */
-  async selectAppropriateTool(query: string): Promise<toolResponse | null> {
-    console.log(this.getAllTools());
+  async selectAppropriateTool(query: string,walletAddress?:string): Promise<toolResponse | null> {
+
     const finalPrompt = this.prompt.replace(
       '${toolsList}',
       JSON.stringify(this.getAllTools()),
     );
 
+    
     const response = await atomaChat(this.sdk, [
       {
-        content: finalPrompt,
+        content: walletAddress?`${finalPrompt}.Wallet address is ${walletAddress}.`:finalPrompt,
         role: 'system',
       },
       {

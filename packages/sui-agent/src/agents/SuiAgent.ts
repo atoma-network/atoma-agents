@@ -30,9 +30,9 @@ class Agents {
    * @param prompt - User's input query
    * @returns IntentAgentResponse containing tool selection and processing details
    */
-  async IntentAgent(prompt: string) {
+  async IntentAgent(prompt: string,address?:string) {
     const IntentResponse: IntentAgentResponse =
-      (await this.tools.selectAppropriateTool(prompt)) as IntentAgentResponse;
+      (await this.tools.selectAppropriateTool(prompt,address)) as IntentAgentResponse;
 
     return IntentResponse;
   }
@@ -61,9 +61,9 @@ class Agents {
    * @param prompt - User's input query
    * @returns Final processed response
    */
-  async SuperVisorAgent(prompt: string) {
+  async SuperVisorAgent(prompt: string,walletAddress?:string) {
     // Process intent
-    const res = await this.IntentAgent(prompt);
+    const res = await this.IntentAgent(prompt, walletAddress);
     console.log('Intent Response:', res);
 
     // Make decision based on intent
