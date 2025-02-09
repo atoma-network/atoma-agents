@@ -127,7 +127,7 @@ async function checkUserLiquidations(address: string) {
       },
     });
     const liquidations = response.data;
-    console.log(liquidations.result.rows, 'liquidations');
+
     return {
       asUser: liquidations.result.rows.filter(
         (l: Liquidation) => l.user === address,

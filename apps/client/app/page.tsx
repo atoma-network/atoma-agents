@@ -1,13 +1,13 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import PulseLoader from './components/ui/pulseLoader';
 import api from './lib/api';
 import { useWallet } from '@suiet/wallet-kit';
 import JSONFormatter from './utils/JSONFormatter';
 
-import { keywords } from './data';
-
 import Messages from './components/sections/Messages';
 import SampleQuestions from './components/sections/SampleQuestions';
+import LoadingPage from './components/ui/loadingPage';
 
 export default function Home() {
   const [messages, setMessages] = useState<
@@ -15,32 +15,46 @@ export default function Home() {
   >([]);
   const [inputValue, setInputValue] = useState('');
   const [isThinking, setIsThinking] = useState(false);
-  const { address } = useWallet();
+  const { address, connected } = useWallet();
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Load chat history when wallet connects
+  useEffect(() => {
+    if (address && connected) {
+      loadChatHistory();
+      // // Send initial wallet connection message
+      // handleSend(`Connected wallet: ${address}`);
+    }
+  }, [address, connected]);
+
+  const loadChatHistory = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.get(`/query/history/${address}`);
+      setMessages(response.data);
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSend = async (message?: string) => {
     const userMessage = message || inputValue.trim();
 
     if (userMessage) {
       setMessages((prev) => [...prev, { text: userMessage, sender: 'user' }]);
-      setIsThinking(true);
       setInputValue('');
+      setIsThinking(true);
 
       try {
-        let modifiedMessage = userMessage;
+        // Always send the wallet address with the query
+        const response = await api.post('/query', {
+          query: userMessage,
+          walletAddress: address
+        });
 
-        const containsKeywords = keywords.some((keyword) =>
-          userMessage.toLowerCase().includes(keyword)
-        );
-
-        if (containsKeywords) {
-          modifiedMessage = `${userMessage}. My wallet address is ${address}.`;
-        }
-
-        console.log(modifiedMessage, 'modified');
-        const response = await api.post('/query', { query: modifiedMessage });
-        console.log(response);
         const res = response.data[0];
-        console.log(res);
         let llmResponse = '';
 
         if (typeof res.response === 'string') {
@@ -65,7 +79,7 @@ export default function Home() {
       }
     }
   };
-
+  if (isLoading) return <LoadingPage />;
   return (
     <div className="h-[90dvh] w-[90dvw] flex justify-center relative items-center flex-col bg-gradient-to-b from-white to-gray-100">
       {/* Chat messages */}
@@ -81,7 +95,8 @@ export default function Home() {
 
           {isThinking && (
             <div className="relative mb-3 p-3 rounded-md w-fit max-w-[70%] bg-gray-300 text-black self-start mr-auto text-left">
-              Please wait...
+              {/* Please wait... */}
+              <PulseLoader />
             </div>
           )}
         </div>

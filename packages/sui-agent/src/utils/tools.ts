@@ -1,5 +1,5 @@
 import { Tool, toolResponse } from '../@types/interface';
-import { atomaChat } from '../config/atoma';
+import Atoma from '../config/atoma';
 import { AtomaSDK } from 'atoma-sdk';
 
 /**
@@ -44,24 +44,52 @@ class Tools {
    * @param query - User query
    * @returns Selected tool response or null if no tool found
    */
-  async selectAppropriateTool(query: string): Promise<toolResponse | null> {
-    console.log(this.getAllTools());
+  async selectAppropriateTool(
+    AtomaClass: Atoma,
+    query: string,
+    walletAddress?: string,
+  ): Promise<toolResponse | null> {
     const finalPrompt = this.prompt.replace(
       '${toolsList}',
       JSON.stringify(this.getAllTools()),
     );
 
-    const response = await atomaChat(this.sdk, [
-      {
-        content: finalPrompt,
-        role: 'system',
-      },
-      {
-        content: query || '',
-        role: 'user',
-      },
+    const promptWithAddr = walletAddress
+      ? `${finalPrompt}.Wallet address is ${walletAddress}.`
+      : finalPrompt;
+
+    // const response = await new AtomaSDK({bearerAuth:'bearer auth here'}).chat.create({
+    //   messages: [
+    //     {role:"assistant",content:promptWithAddr},
+    //     { role: "user", content: query }
+    //   ],
+    //   model: "meta-llama/Llama-3.3-70B-Instruct"
+    // });
+
+    const response = await AtomaClass.atomaChat([
+      { role: 'assistant', content: promptWithAddr },
+      { role: 'user', content: query },
     ]);
 
+    //  let r=await atomaChat(this.sdk,[
+    //       {role:"assistant",content:promptWithAddr},
+    //       { role: "user", content: query }
+    //     ],)
+    //     console.log(r,'this is the RRRRRR')
+    // console.log(result.choices)
+
+    // const response = await atomaChat(this.sdk, [
+    //   {
+    //     content: promptWithAddr,
+    //     role: 'assistant',
+    //   },
+    //   {
+    //     content: query || '',
+    //     role: 'user',
+    //   },
+    // ]);
+    //     console.log(response,'joop')
+    //  console.log('response is from atoma chat tho')
     // Handle the response based on the IntentAgentResponse interface
     if (
       response &&

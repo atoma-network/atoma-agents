@@ -1,10 +1,10 @@
 import './globals.css';
 import { Manrope } from 'next/font/google';
-import Header from './components/ui/Header';
+import Header from './components/layout/Header';
 import Providers from '@/app/providers';
 import '@suiet/wallet-kit/style.css';
 import './walletCustomCss.css';
-import Sidebar from './components/ui/Sidebar';
+import Sidebar from './components/layout/Sidebar';
 
 const manrope = Manrope({ subsets: ['latin'] });
 

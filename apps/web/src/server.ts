@@ -1,49 +1,31 @@
-import http from 'http';
 import app from './app';
-import { config } from './config';
+import { connectDB, disconnectDB } from './utils/db';
 
-/**
- * Main application class that initializes and starts the server
- */
-class Main {
-  private port: string | number;
+const port = process.env.PORT || 2512;
 
-  /**
-   * Initialize the application with port
-   * @param port - Port number for the server to listen on
-   */
-  constructor(port: string | number) {
-    this.port = port;
-  }
+async function startServer() {
+  try {
+    await connectDB();
 
-  /**
-   * Start the HTTP server
-   */
-  async start() {
-    const server = http.createServer(app);
+    const server = app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
 
-    // Graceful shutdown handler
-    const shutdown = () => {
-      console.log('Shutting down gracefully...');
-      server.close(() => {
-        console.log('Server closed');
+    // Handle graceful shutdown
+    const shutdown = async () => {
+      console.log('Shutting down server...');
+      server.close(async () => {
+        await disconnectDB();
         process.exit(0);
       });
     };
 
-    // Handle shutdown signals
     process.on('SIGTERM', shutdown);
     process.on('SIGINT', shutdown);
-
-    server.listen(this.port, () => {
-      console.log(`Server is listening on port ${this.port}`);
-    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
   }
 }
 
-// Create and start the application
-const main = new Main(config.port);
-main.start().catch((error) => {
-  console.error('Failed to start server:', error);
-  process.exit(1);
-});
+startServer();

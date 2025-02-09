@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { AtomaSDK } from 'atoma-sdk';
-import { atomaChat } from '../config/atoma';
+import Atoma from '../config/atoma';
 import Tools from './tools';
 import { ToolArgument } from '../@types/interface';
 
@@ -36,16 +36,21 @@ class Utils {
    * @returns Processed response
    */
   async processQuery(
+    AtomaInstance: Atoma,
     query: string,
     selectedTool: string | null,
     toolArguments: ToolArgument[] = [],
   ) {
     try {
       if (!selectedTool) {
-        return this.finalAnswer('No tool selected for the query', query);
+        return this.finalAnswer(
+          AtomaInstance,
+          'No tool selected for the query',
+          query,
+        );
       }
 
-      return this.executeTools(selectedTool, toolArguments);
+      return this.executeTools(selectedTool, toolArguments, AtomaInstance);
     } catch (error: unknown) {
       console.error('Error processing query:', error);
       return handleError(error, {
@@ -64,18 +69,37 @@ class Utils {
    * @returns Formatted response
    * @private
    */
-  private async finalAnswer(response: string, query: string, tools?: string) {
+  private async finalAnswer(
+    AtomaInstance: Atoma,
+    response: string,
+    query: string,
+    tools?: string,
+  ) {
     const finalPrompt = this.prompt
       .replace('${query}', query)
       .replace('${response}', response)
       .replace('tools', `${tools || null}`);
 
-    const finalAns = await atomaChat(this.sdk, [
-      {
-        content: finalPrompt,
-        role: 'assistant',
-      },
+    // const finalAns = await new AtomaSDK({bearerAuth:'bearer auth here'}).chat.create({
+    //   messages: [
+    //     {role:"assistant",content:finalPrompt},
+    //   //  { role: "user", content: query }
+    //   ],
+    //   model: "meta-llama/Llama-3.3-70B-Instruct"
+    // });
+
+    const finalAns = await AtomaInstance.atomaChat([
+      { role: 'assistant', content: finalPrompt },
+      { role: 'user', content: query },
     ]);
+    console.log('new one');
+
+    // const finalAns = await atomaChat(this.sdk, [
+    //   {
+    //     content: finalPrompt,
+    //     role: 'assistant',
+    //   },
+    // ]);
     const res = finalAns.choices[0].message.content;
     console.log(finalPrompt);
     return JSON.parse(res);
@@ -91,6 +115,7 @@ class Utils {
   private async executeTools(
     selected_tool: string,
     args: ToolArgument[] | null,
+    AtomaInstance: Atoma,
   ) {
     const tool = this.tools.getAllTools().find((t) => t.name === selected_tool);
     console.log('Selected tool:', selected_tool);
@@ -103,7 +128,7 @@ class Utils {
     try {
       const toolArgs = args || [];
       const result = await tool.process(...toolArgs);
-      return await this.finalAnswer(result, '', selected_tool);
+      return await this.finalAnswer(AtomaInstance, result, '', selected_tool);
     } catch (error: unknown) {
       console.error('Error executing tool:', error);
       return handleError(error, {

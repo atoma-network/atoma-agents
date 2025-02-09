@@ -4,6 +4,7 @@ import { registerAllTools } from './ToolRegistry';
 import Utils from '../utils';
 import intent_agent_prompt from '../prompts/intent_agent_prompt';
 import final_answer_agent_prompt from '../prompts/final_answer_agent';
+import Atoma from '../config/atoma';
 
 /**
  * Main agent class that handles intent processing and decision making
@@ -17,9 +18,11 @@ import final_answer_agent_prompt from '../prompts/final_answer_agent';
 class Agents {
   private tools: Tools;
   private utils: Utils;
+  private AtomaClass: Atoma;
 
   constructor(bearerAuth: string) {
     this.tools = new Tools(bearerAuth, intent_agent_prompt);
+    this.AtomaClass = new Atoma(bearerAuth);
     this.utils = new Utils(bearerAuth, final_answer_agent_prompt, this.tools);
     // Register tools when agent is instantiated
     registerAllTools(this.tools);
@@ -30,9 +33,13 @@ class Agents {
    * @param prompt - User's input query
    * @returns IntentAgentResponse containing tool selection and processing details
    */
-  async IntentAgent(prompt: string) {
+  async IntentAgent(prompt: string, address?: string) {
     const IntentResponse: IntentAgentResponse =
-      (await this.tools.selectAppropriateTool(prompt)) as IntentAgentResponse;
+      (await this.tools.selectAppropriateTool(
+        this.AtomaClass,
+        prompt,
+        address,
+      )) as IntentAgentResponse;
 
     return IntentResponse;
   }
@@ -49,6 +56,7 @@ class Agents {
   ) {
     // Pass both the selected tool name and arguments to processQuery
     return await this.utils.processQuery(
+      this.AtomaClass,
       query,
       intentResponse.selected_tool,
       intentResponse.tool_arguments,
@@ -61,10 +69,9 @@ class Agents {
    * @param prompt - User's input query
    * @returns Final processed response
    */
-  async SuperVisorAgent(prompt: string) {
+  async SuperVisorAgent(prompt: string, walletAddress?: string) {
     // Process intent
-    const res = await this.IntentAgent(prompt);
-    console.log('Intent Response:', res);
+    const res = await this.IntentAgent(prompt, walletAddress);
 
     // Make decision based on intent
     const finalAnswer = await this.DecisionMakingAgent(res, prompt);
