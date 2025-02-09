@@ -58,39 +58,11 @@ class Tools {
       ? `${finalPrompt}.Wallet address is ${walletAddress}.`
       : finalPrompt;
 
-    // const response = await new AtomaSDK({bearerAuth:'bearer auth here'}).chat.create({
-    //   messages: [
-    //     {role:"assistant",content:promptWithAddr},
-    //     { role: "user", content: query }
-    //   ],
-    //   model: "meta-llama/Llama-3.3-70B-Instruct"
-    // });
-
     const response = await AtomaClass.atomaChat([
       { role: 'assistant', content: promptWithAddr },
       { role: 'user', content: query },
     ]);
 
-    //  let r=await atomaChat(this.sdk,[
-    //       {role:"assistant",content:promptWithAddr},
-    //       { role: "user", content: query }
-    //     ],)
-    //     console.log(r,'this is the RRRRRR')
-    // console.log(result.choices)
-
-    // const response = await atomaChat(this.sdk, [
-    //   {
-    //     content: promptWithAddr,
-    //     role: 'assistant',
-    //   },
-    //   {
-    //     content: query || '',
-    //     role: 'user',
-    //   },
-    // ]);
-    //     console.log(response,'joop')
-    //  console.log('response is from atoma chat tho')
-    // Handle the response based on the IntentAgentResponse interface
     if (
       response &&
       'choices' in response &&
