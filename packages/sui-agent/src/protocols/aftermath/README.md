@@ -5,18 +5,21 @@ The Sui Agent includes comprehensive integration with the Aftermath Protocol, pr
 ### Features
 
 #### Pool Management
+
 - Get pool information and statistics
 - View pool metrics (TVL, APR, fees)
 - Monitor pool events
 - Filter and rank pools by various metrics
 
 #### Trading
+
 - Execute swaps with slippage protection
 - Calculate expected trade outputs
 - Find optimal trade routes
 - Support for multi-pool deposits and withdrawals
 
 #### Staking
+
 - View staking positions
 - Stake and unstake SUI
 - Monitor TVL and exchange rates
@@ -34,9 +37,7 @@ const poolInfo = await agent.SuperVisorAgent(
 );
 
 // Get APR for a token
-const apr = await agent.SuperVisorAgent(
-  'Get APR for token 0x456...def',
-);
+const apr = await agent.SuperVisorAgent('Get APR for token 0x456...def');
 
 // Execute a multi-pool deposit
 const deposit = await agent.SuperVisorAgent(
@@ -52,6 +53,7 @@ const stakingInfo = await agent.SuperVisorAgent(
 ### Supported Operations
 
 1. Pool Operations
+
    - `get_pool`: Get details about a specific pool
    - `get_all_pools`: Get information about all pools
    - `get_pool_events`: Get deposit/withdrawal events for a pool
@@ -59,6 +61,7 @@ const stakingInfo = await agent.SuperVisorAgent(
    - `get_filtered_pools`: Get pools filtered by specific criteria
 
 2. Trading Operations
+
    - `get_pool_spot_price`: Get spot price between tokens
    - `get_trade_amount_out`: Calculate expected output for a trade
    - `get_trade_route`: Find optimal route for a trade
@@ -74,6 +77,7 @@ const stakingInfo = await agent.SuperVisorAgent(
 ### Configuration
 
 The Aftermath integration uses the following environment variables:
+
 - `SUI_RPC_URL`: The Sui network RPC URL (defaults to mainnet)
 - `SUI_WALLET_ADDRESS`: The simulation account address
 
@@ -99,4 +103,4 @@ Integration tests are available in `src/tests/aftermath.test.ts`. To run the tes
 npm test -- aftermath.test.ts
 ```
 
-Make sure to set the required environment variables before running tests. 
+Make sure to set the required environment variables before running tests.

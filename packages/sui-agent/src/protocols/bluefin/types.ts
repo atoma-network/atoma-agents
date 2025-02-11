@@ -1,7 +1,13 @@
-import { MarketSymbol, ORDER_SIDE, ORDER_TYPE, TIME_IN_FORCE, ORDER_STATUS } from "@bluefin-exchange/bluefin-v2-client";
+import {
+  MarketSymbol,
+  ORDER_SIDE,
+  ORDER_TYPE,
+  TIME_IN_FORCE,
+  ORDER_STATUS,
+} from '@bluefin-exchange/bluefin-v2-client';
 
 export interface BluefinConfig {
-  network: "mainnet" | "testnet" | "devnet";
+  network: 'mainnet' | 'testnet' | 'devnet';
   isTermAccepted: boolean;
 }
 
@@ -41,4 +47,4 @@ export interface BluefinUserDataParams {
 export interface BluefinMarketDataParams {
   symbol?: MarketSymbol;
   limit?: number;
-} 
+}

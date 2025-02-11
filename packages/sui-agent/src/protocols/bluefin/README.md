@@ -21,9 +21,11 @@ This module provides integration with the Bluefin decentralized derivatives exch
 ### Order Management
 
 #### `place_bluefin_order`
+
 Place a new order on Bluefin.
 
 Parameters:
+
 - `symbol` (string, required): Trading pair symbol
 - `side` (string, required): Order side (BUY/SELL)
 - `type` (string, required): Order type (LIMIT/MARKET)
@@ -32,9 +34,11 @@ Parameters:
 - `leverage` (number, optional): Position leverage
 
 #### `cancel_bluefin_order`
+
 Cancel an existing order on Bluefin.
 
 Parameters:
+
 - `symbol` (string, required): Trading pair symbol
 - `order_id` (string, optional): Order ID to cancel
 - `cancel_all` (boolean, optional): Cancel all open orders
@@ -42,16 +46,20 @@ Parameters:
 ### Position Management
 
 #### `adjust_bluefin_position`
+
 Adjust position leverage on Bluefin.
 
 Parameters:
+
 - `symbol` (string, required): Trading pair symbol
 - `leverage` (number, required): New leverage value
 
 #### `adjust_bluefin_margin`
+
 Add or remove margin from a position.
 
 Parameters:
+
 - `symbol` (string, required): Trading pair symbol
 - `amount` (number, required): Amount to add/remove
 - `is_deposit` (boolean, required): True for deposit, false for withdrawal
@@ -59,30 +67,38 @@ Parameters:
 ### Market Data
 
 #### `get_bluefin_orderbook`
+
 Get the orderbook for a trading pair.
 
 Parameters:
+
 - `symbol` (string, required): Trading pair symbol
 
 #### `get_bluefin_market_data`
+
 Get market data for a trading pair.
 
 Parameters:
+
 - `symbol` (string, optional): Trading pair symbol
 
 ### User Data
 
 #### `get_bluefin_user_positions`
+
 Get user's open positions.
 
 Parameters:
+
 - `symbol` (string, optional): Trading pair symbol
 - `parent_address` (string, optional): Parent address
 
 #### `get_bluefin_user_orders`
+
 Get user's orders.
 
 Parameters:
+
 - `symbol` (string, optional): Trading pair symbol
 - `parent_address` (string, optional): Parent address
 
@@ -91,21 +107,21 @@ Parameters:
 ```typescript
 // Initialize the protocol
 const bluefinProtocol = new BluefinProtocol(provider, keypair, {
-  network: "mainnet",
+  network: 'mainnet',
   isTermAccepted: true,
 });
 
 // Place a market order
-await tools.execute("place_bluefin_order", [
-  "BTC-PERP",  // symbol
-  "BUY",       // side
-  "MARKET",    // type
-  1.0,         // quantity
+await tools.execute('place_bluefin_order', [
+  'BTC-PERP', // symbol
+  'BUY', // side
+  'MARKET', // type
+  1.0, // quantity
 ]);
 
 // Get user positions
-await tools.execute("get_bluefin_user_positions", [
-  "BTC-PERP",  // symbol
+await tools.execute('get_bluefin_user_positions', [
+  'BTC-PERP', // symbol
 ]);
 ```
 
@@ -126,4 +142,4 @@ All tools return responses in a standardized format:
 ## Dependencies
 
 - @bluefin-exchange/bluefin-v2-client: ^6.1.29
-- @mysten/sui: ^1.1.0 
+- @mysten/sui: ^1.1.0

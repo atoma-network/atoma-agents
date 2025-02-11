@@ -5,18 +5,21 @@ The Sui Agent includes integration with the Navi Protocol, providing access to N
 ### Features
 
 #### Perpetual Trading
+
 - Open and close positions
 - Manage leverage and margin
 - Monitor position metrics
 - Track funding rates
 
 #### Market Data
+
 - Get real-time prices
 - View market statistics
 - Monitor trading volume
 - Track historical data
 
 #### Account Management
+
 - View account positions
 - Monitor margin levels
 - Track PnL
@@ -52,6 +55,7 @@ const funding = await agent.SuperVisorAgent(
 ### Supported Operations
 
 1. Trading Operations
+
    - Open positions with leverage
    - Close positions
    - Adjust position size
@@ -59,6 +63,7 @@ const funding = await agent.SuperVisorAgent(
    - Set stop loss and take profit
 
 2. Market Operations
+
    - Get market prices
    - View order book depth
    - Monitor funding rates
@@ -74,6 +79,7 @@ const funding = await agent.SuperVisorAgent(
 ### Configuration
 
 The Navi integration uses the following environment variables:
+
 - `SUI_RPC_URL`: The Sui network RPC URL (defaults to mainnet)
 - `SUI_WALLET_ADDRESS`: The simulation account address
 
@@ -99,4 +105,4 @@ Integration tests are available in `src/tests/navi.test.ts`. To run the tests:
 npm test -- navi.test.ts
 ```
 
-Make sure to set the required environment variables before running tests. 
+Make sure to set the required environment variables before running tests.
