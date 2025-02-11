@@ -241,26 +241,6 @@ The agent uses a standardized error response format:
 }
 ```
 
-## Development
-
-### Running Tests
-
-```bash
-npm test
-```
-
-### Building
-
-```bash
-npm run build
-```
-
-### Development Server
-
-```bash
-npm run dev
-```
-
 ## Dependencies
 
 - aftermath-ts-sdk: Aftermath Finance SDK
