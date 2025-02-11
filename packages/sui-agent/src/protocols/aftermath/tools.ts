@@ -1,118 +1,55 @@
+import { Aftermath } from 'aftermath-ts-sdk';
 import Tools from '../../utils/tools';
-import {
-  getPool,
-  getAllPools,
-  getPoolEvents,
-  getRankedPools,
-  getFilteredPools,
-} from './PoolTool';
-import {
-  getPoolSpotPrice,
-  getTradeAmountOut,
-  getTradeRoute,
-  getDepositTransaction,
-  getWithdrawTransaction,
-} from './TradeTool';
+import PoolTool from './PoolTool';
+import TradeTool from './TradeTool';
 import { getCoinPrice, coinsToPrice } from './PriceTool';
 import { getTokenAPR } from './apr';
-class AfterMathTools {
+import StakingTool from './staking';
+import { RankingMetric } from './types';
+
+class AftermathTools {
+  private static sdk: Aftermath | null = null;
+
+  private static initSDK() {
+    if (!this.sdk) {
+      this.sdk = new Aftermath('MAINNET');
+    }
+    return this.sdk;
+  }
+
   public static registerTools(tools: Tools) {
     // Price Tools
     tools.registerTool(
-      'price_tool',
-      'Tool to get the price of a single coin',
+      'get_coin_price on Aftermath',
+      'Get the price of a single coin on Aftermath',
       [
         {
           name: 'coin',
           type: 'string',
-          description: 'The cryptocurrency coin ID (e.g., bitcoin, ethereum)',
+          description: 'The coin symbol or address',
           required: true,
         },
       ],
-      getCoinPrice,
+      async (...args) => getCoinPrice(args[0] as string),
     );
 
     tools.registerTool(
-      'get_coins_to_price',
-      'Tool to get the price of multiple coins',
+      'get_coins_to_price on Aftermath',
+      'Get the price of multiple coins on Aftermath',
       [
         {
           name: 'coins',
           type: 'string',
-          description:
-            'Comma-separated list of coin symbols or addresses (e.g., "SUI,USDC" or full addresses)',
+          description: 'Comma-separated list of coin symbols or addresses',
           required: true,
         },
       ],
-      coinsToPrice,
+      async (...args) => coinsToPrice(args[0] as string),
     );
 
     tools.registerTool(
-      'get_token_apr',
-      'Tool to get the APR of a token',
-      [
-        {
-          name: 'tokenAddress',
-          type: 'string',
-          description: 'The token address to get APR for',
-          required: true,
-        },
-      ],
-      getTokenAPR,
-    );
-
-    // Pool Tools
-    tools.registerTool(
-      'get_pool',
-      'Tool to get detailed information about a specific pool',
-      [
-        {
-          name: 'poolId',
-          type: 'string',
-          description: 'The pool ID to get information for',
-          required: true,
-        },
-      ],
-      getPool,
-    );
-
-    tools.registerTool(
-      'get_all_pools',
-      'Tool to get information about all available pools',
-      [],
-      getAllPools,
-    );
-
-    tools.registerTool(
-      'get_pool_events',
-      'Tool to get deposit or withdrawal events for a pool',
-      [
-        {
-          name: 'poolId',
-          type: 'string',
-          description: 'The pool ID to get events for',
-          required: true,
-        },
-        {
-          name: 'eventType',
-          type: 'string',
-          description: 'Type of events to fetch (deposit or withdraw)',
-          required: true,
-        },
-        {
-          name: 'limit',
-          type: 'number',
-          description: 'Maximum number of events to return',
-          required: false,
-        },
-      ],
-      getPoolEvents,
-    );
-
-    // Pool Ranking Tools
-    tools.registerTool(
-      'get_ranked_pools',
-      'Tool to get top pools ranked by a specific metric (apr, tvl, fees, volume)',
+      'get ranked pools on Aftermath',
+      'Get ranked pools by a specific metric',
       [
         {
           name: 'metric',
@@ -126,203 +63,244 @@ class AfterMathTools {
           description: 'Number of pools to return',
           required: false,
         },
-        {
-          name: 'order',
-          type: 'string',
-          description: 'Sort order (asc or desc)',
-          required: false,
-        },
       ],
-      getRankedPools,
+      async (...args) =>
+        PoolTool.getRankedPools(args[0] as RankingMetric, args[1] as number),
     );
 
     tools.registerTool(
-      'get_filtered_pools',
-      'Tool to get pools filtered by specific criteria',
+      'get_token_apr on Aftermath',
+      'Get the APR of a token on Aftermath',
       [
         {
-          name: 'minTvl',
-          type: 'number',
-          description: 'Minimum TVL requirement',
-          required: false,
+          name: 'token_address',
+          type: 'string',
+          description: 'The token address to get APR for',
+          required: true,
+        },
+      ],
+      async (...args) => getTokenAPR(args[0] as string),
+    );
+
+    // Pool Tools
+    tools.registerTool(
+      'get_pool',
+      'Get details about a specific pool',
+      [
+        {
+          name: 'pool_id',
+          type: 'string',
+          description: 'The pool ID to get information for',
+          required: true,
+        },
+      ],
+      async (...args) => PoolTool.getPoolInfo(args[0] as string),
+    );
+
+    tools.registerTool(
+      'get_all_pools',
+      'Get information about all available pools on Aftermath',
+      [],
+      PoolTool.getPools,
+    );
+
+    tools.registerTool(
+      'get_pool_events',
+      'Get deposit or withdrawal events for a pool on Aftermath',
+      [
+        {
+          name: 'pool_id',
+          type: 'string',
+          description: 'The pool ID to get events for',
+          required: true,
         },
         {
-          name: 'minApr',
-          type: 'number',
-          description: 'Minimum APR requirement',
-          required: false,
+          name: 'event_type',
+          type: 'string',
+          description: 'Type of events to fetch (deposit or withdraw)',
+          required: true,
         },
         {
-          name: 'tokens',
-          type: 'array',
-          description: 'Array of token symbols that must be in the pool',
+          name: 'limit',
+          type: 'number',
+          description: 'Maximum number of events to return',
           required: false,
         },
       ],
-      getFilteredPools,
+      async (...args) =>
+        PoolTool.getPoolEvents(
+          args[0] as string,
+          args[1] as string,
+          args[2] as number,
+        ),
     );
 
-    // Trade Tools
+    // Pool Ranking Tools
+    tools.registerTool(
+      'get_ranked_pools',
+      'Get top pools ranked by a specific metric on Aftermath',
+      [
+        {
+          name: 'metric',
+          type: 'string',
+          description: 'Metric to rank by (apr, tvl, fees, volume)',
+          required: true,
+        },
+        {
+          name: 'limit',
+          type: 'number',
+          description: 'Number of pools to return',
+          required: false,
+        },
+      ],
+      async (...args) =>
+        PoolTool.getRankedPools(args[0] as RankingMetric, args[1] as number),
+    );
+
+    // Trading Tools
     tools.registerTool(
       'get_spot_price',
-      'Tool to get the spot price between two tokens in a pool',
+      'Get the spot price between two tokens in a pool on Aftermath',
       [
         {
-          name: 'poolId',
+          name: 'pool_id',
           type: 'string',
           description: 'The pool ID to check prices in',
           required: true,
         },
-        {
-          name: 'coinInType',
-          type: 'string',
-          description: 'Address of the input token',
-          required: true,
-        },
-        {
-          name: 'coinOutType',
-          type: 'string',
-          description: 'Address of the output token',
-          required: true,
-        },
-        {
-          name: 'withFees',
-          type: 'boolean',
-          description: 'Whether to include fees in the price calculation',
-          required: false,
-        },
       ],
-      getPoolSpotPrice,
+      async (...args) => TradeTool.getPoolSpotPrice(args[0] as string),
     );
 
     tools.registerTool(
       'get_trade_amount_out',
-      'Tool to calculate the expected output amount for a trade',
+      'Calculate expected output amount for a trade on Aftermath',
       [
         {
-          name: 'poolId',
+          name: 'pool_id',
           type: 'string',
-          description: 'The pool ID to calculate trade in',
+          description: 'The pool ID to trade in',
           required: true,
         },
         {
-          name: 'coinInType',
+          name: 'amount_in',
           type: 'string',
-          description: 'Address of the input token',
-          required: true,
-        },
-        {
-          name: 'coinOutType',
-          type: 'string',
-          description: 'Address of the output token',
-          required: true,
-        },
-        {
-          name: 'coinInAmount',
-          type: 'string',
-          description: 'Amount of input token (in base units)',
-          required: true,
-        },
-      ],
-      getTradeAmountOut,
-    );
-
-    tools.registerTool(
-      'get_trade_route',
-      'Tool to find the best trade route between tokens',
-      [
-        {
-          name: 'coinInType',
-          type: 'string',
-          description: 'Address of the input token',
-          required: true,
-        },
-        {
-          name: 'coinOutType',
-          type: 'string',
-          description: 'Address of the output token',
-          required: true,
-        },
-        {
-          name: 'coinInAmount',
-          type: 'string',
-          description: 'Amount of input token (in base units)',
-          required: true,
-        },
-      ],
-      getTradeRoute,
-    );
-
-    tools.registerTool(
-      'get_deposit_transaction',
-      'Tool to generate a deposit transaction for a pool',
-      [
-        {
-          name: 'poolId',
-          type: 'string',
-          description: 'The pool ID to deposit into',
-          required: true,
-        },
-        {
-          name: 'walletAddress',
-          type: 'string',
-          description: 'Address of the depositing wallet',
-          required: true,
-        },
-        {
-          name: 'amountsIn',
-          type: 'object',
-          description: 'Map of token addresses to amounts to deposit',
+          description: 'Amount of input token',
           required: true,
         },
         {
           name: 'slippage',
           type: 'number',
-          description: 'Maximum allowed slippage (e.g., 0.01 for 1%)',
-          required: false,
+          description: 'Maximum slippage percentage',
+          required: true,
+        },
+        {
+          name: 'wallet_address',
+          type: 'string',
+          description: 'Address of the trading wallet',
+          required: true,
         },
       ],
-      getDepositTransaction,
+      async (...args) =>
+        TradeTool.getTradeAmountOut({
+          poolId: args[0] as string,
+          amountIn: BigInt(args[1] as string),
+          slippage: args[2] as number,
+          walletAddress: args[3] as string,
+        }),
+    );
+
+    // Staking Tools
+    tools.registerTool(
+      'get_staking_positions',
+      'Get staking positions for a wallet on Aftermath',
+      [
+        {
+          name: 'wallet_address',
+          type: 'string',
+          description: 'Address to get positions for',
+          required: true,
+        },
+      ],
+      async (...args) => StakingTool.getStakingPositions(args[0] as string),
     );
 
     tools.registerTool(
-      'get_withdraw_transaction',
-      'Tool to generate a withdrawal transaction for a pool',
+      'get_sui_tvl',
+      'Get total SUI TVL in staking',
+      [],
+      StakingTool.getSuiTvl,
+    );
+
+    tools.registerTool(
+      'get_afsui_exchange_rate',
+      'Get afSUI to SUI exchange rate',
+      [],
+      StakingTool.getAfSuiExchangeRate,
+    );
+
+    tools.registerTool(
+      'get_stake_transaction on Aftermath',
+      'Generate a staking transaction',
       [
         {
-          name: 'poolId',
+          name: 'wallet_address',
           type: 'string',
-          description: 'The pool ID to withdraw from',
+          description: 'Address of the staking wallet',
           required: true,
         },
         {
-          name: 'walletAddress',
+          name: 'sui_amount',
           type: 'string',
-          description: 'Address of the withdrawing wallet',
+          description: 'Amount of SUI to stake',
           required: true,
         },
         {
-          name: 'amountsOutDirection',
-          type: 'object',
-          description: 'Map of token addresses to desired withdrawal amounts',
-          required: true,
-        },
-        {
-          name: 'lpCoinAmount',
+          name: 'validator_address',
           type: 'string',
-          description: 'Amount of LP tokens to burn',
+          description: 'Address of the validator',
+          required: true,
+        },
+      ],
+      async (...args) =>
+        StakingTool.getStakeTransaction({
+          walletAddress: args[0] as string,
+          suiAmount: BigInt(args[1] as string),
+          validatorAddress: args[2] as string,
+        }),
+    );
+
+    tools.registerTool(
+      'get_unstake_transaction on Aftermath',
+      'Generate an unstaking transaction on Aftermath',
+      [
+        {
+          name: 'wallet_address',
+          type: 'string',
+          description: 'Address of the unstaking wallet',
           required: true,
         },
         {
-          name: 'slippage',
-          type: 'number',
-          description: 'Maximum allowed slippage (e.g., 0.01 for 1%)',
+          name: 'afsui_amount',
+          type: 'string',
+          description: 'Amount of afSUI to unstake',
+          required: true,
+        },
+        {
+          name: 'is_atomic',
+          type: 'boolean',
+          description: 'Whether to perform atomic unstaking',
           required: false,
         },
       ],
-      getWithdrawTransaction,
+      async (...args) =>
+        StakingTool.getUnstakeTransaction({
+          walletAddress: args[0] as string,
+          afSuiAmount: BigInt(args[1] as string),
+          isAtomic: (args[2] as boolean) ?? true,
+        }),
     );
   }
 }
 
-export default AfterMathTools;
+export default AftermathTools;

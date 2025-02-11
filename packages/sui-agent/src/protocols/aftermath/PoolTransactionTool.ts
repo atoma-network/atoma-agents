@@ -3,7 +3,7 @@ import { Transaction } from '@mysten/sui/transactions';
 import { SuiClient } from '@mysten/sui/client';
 import { handleError } from '../../utils';
 import { initSuiClient } from '../../transactions/Transaction';
-import { getRankedPools } from './PoolTool';
+import PoolTool from './PoolTool';
 
 // Initialize Aftermath SDK for mainnet
 const af = new Aftermath('MAINNET');
@@ -132,7 +132,7 @@ export async function depositIntoTopPools(
 ): Promise<string> {
   try {
     // Get top ranked pools.
-    const rankedPoolsResponse = await getRankedPools(metric, numPools);
+    const rankedPoolsResponse = await PoolTool.getRankedPools(metric, numPools);
     const rankedPoolsData = JSON.parse(rankedPoolsResponse)[0];
     if (rankedPoolsData.status !== 'success') {
       throw new Error('Failed to fetch ranked pools');

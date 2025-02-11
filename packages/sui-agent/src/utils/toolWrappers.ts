@@ -1,14 +1,11 @@
 import { TokenBalance } from '../@types/interface';
+import PoolTool from '../protocols/aftermath/PoolTool';
+import StakingTool from '../protocols/aftermath/staking';
+import { RankingMetric } from '../protocols/aftermath/types';
 import {
-  depositIntoTopPools,
+  buildMultiPoolDepositTx,
   buildMultiPoolWithdrawTx,
 } from '../protocols/aftermath/PoolTransactionTool';
-import {
-  getStakingPositions,
-  getSuiTvl,
-  getAfSuiExchangeRate,
-  getStakeTransaction,
-} from '../protocols/aftermath/staking';
 import {
   initSuiClient,
   buildTransferTx,
@@ -17,6 +14,7 @@ import {
   estimateGas,
 } from '../transactions/Transaction';
 import { Transaction } from '@mysten/sui/transactions';
+import { StakeParams } from '../protocols/aftermath/types';
 
 // Transaction wrapper functions
 export async function transferCoinWrapper(
@@ -124,18 +122,44 @@ export async function depositTopPoolsWrapper(
 ): Promise<string> {
   const [walletAddress, metric, amount, numPools, slippage] = args as [
     string,
-    string,
+    RankingMetric,
     string,
     string,
     string,
   ];
-  return depositIntoTopPools(
-    walletAddress,
-    metric as 'apr' | 'tvl' | 'fees' | 'volume',
-    BigInt(amount),
+  // First get the top pools
+  const rankedPoolsResponse = await PoolTool.getRankedPools(
+    metric,
     parseInt(numPools),
+  );
+  const rankedPools = JSON.parse(rankedPoolsResponse)[0].response;
+
+  // Create deposit transactions for each pool
+  const client = initSuiClient();
+  const poolDeposits = rankedPools.map((pool: { id: string }) => ({
+    poolId: pool.id,
+    amount: BigInt(amount),
+  }));
+
+  const tx = await buildMultiPoolDepositTx(
+    client,
+    walletAddress,
+    poolDeposits,
     parseFloat(slippage),
   );
+
+  return JSON.stringify([
+    {
+      reasoning: 'Successfully created deposit transactions',
+      response: {
+        transaction: tx.serialize(),
+        pools: rankedPools,
+      },
+      status: 'success',
+      query: `Created deposit transactions for ${amount} into ${numPools} pools`,
+      errors: [],
+    },
+  ]);
 }
 
 export async function withdrawPoolsWrapper(
@@ -154,16 +178,13 @@ export async function withdrawPoolsWrapper(
     [{ poolId, lpAmount: BigInt(lpAmount) }],
     parseFloat(slippage),
   );
+
   return JSON.stringify([
     {
       reasoning: 'Successfully created withdrawal transaction',
-      response: JSON.stringify(
-        {
-          transaction: tx.serialize(),
-        },
-        null,
-        2,
-      ),
+      response: {
+        transaction: tx.serialize(),
+      },
       status: 'success',
       query: `Created withdrawal transaction for ${lpAmount} LP tokens from pool ${poolId}`,
       errors: [],
@@ -176,15 +197,15 @@ export async function getStakingPositionsWrapper(
   ...args: (string | number | bigint | boolean)[]
 ): Promise<string> {
   const [walletAddress] = args as [string];
-  return getStakingPositions(walletAddress);
+  return StakingTool.getStakingPositions(walletAddress);
 }
 
 export async function getSuiTvlWrapper(): Promise<string> {
-  return getSuiTvl();
+  return StakingTool.getSuiTvl();
 }
 
 export async function getAfSuiExchangeRateWrapper(): Promise<string> {
-  return getAfSuiExchangeRate();
+  return StakingTool.getAfSuiExchangeRate();
 }
 
 export async function getStakeTransactionWrapper(
@@ -195,9 +216,10 @@ export async function getStakeTransactionWrapper(
     string,
     string,
   ];
-  return getStakeTransaction(
+  const params: StakeParams = {
     walletAddress,
-    BigInt(suiAmount),
+    suiAmount: BigInt(suiAmount),
     validatorAddress,
-  );
+  };
+  return StakingTool.getStakeTransaction(params);
 }

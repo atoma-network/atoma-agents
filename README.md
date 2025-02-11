@@ -158,6 +158,7 @@ tools.registerTool(
 ```
 atoma-agents/
 ├── apps/
+    ├── client/
     ├── web/
 ├── packages/
     ├── sui-agent/
@@ -166,7 +167,8 @@ atoma-agents/
             ├── agents/       # AI agent implementation
             ├── config/       # Configuration files
             ├── prompts/      # AI prompt templates
-            ├── tools/        # Tool registry
+            ├── protocols/    # Protocol implementation
+            ├── tests/        # Test files
             ├── transactions/ # Transaction handling
             └── utils/        # Utility functions
 ```

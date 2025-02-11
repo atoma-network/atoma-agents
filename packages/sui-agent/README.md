@@ -107,7 +107,7 @@ curl -X POST http://localhost:2512/query \
 ```bash
 curl -X POST http://localhost:2512/query \
   -H "Content-Type: application/json" \
-  -d '{"prompt": "show me information for pool 0x123..."}'
+  -d '{"prompt": "show me information for pool 0x123... on Cetus Protocol"}'
 ```
 
 ### Get Top Pools
@@ -115,7 +115,7 @@ curl -X POST http://localhost:2512/query \
 ```bash
 curl -X POST http://localhost:2512/query \
   -H "Content-Type: application/json" \
-  -d '{"prompt": "show me the top 5 pools by APR"}'
+  -d '{"prompt": "show me the top 5 pools on Aftermath Finance by APR"}'
 ```
 
 ### Deposit into Top Pools
@@ -124,7 +124,7 @@ curl -X POST http://localhost:2512/query \
 # Deposit into top APR pools
 curl -X POST http://localhost:2512/query \
   -H "Content-Type: application/json" \
-  -d '{"prompt": "deposit 1 SUI into each of the top 5 pools by APR with 1% slippage from my wallet 0x123..."}'
+  -d '{"prompt": "deposit 1 SUI into each of the top 5 pools on Aftermath Finance by APR with 1% slippage from my wallet 0x123..."}'
 
 # Deposit into top TVL pools
 curl -X POST http://localhost:2512/query \
