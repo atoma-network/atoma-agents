@@ -90,3 +90,22 @@ export interface SDKPool {
   };
   stats?: SDKPoolStats;
 }
+
+// Type definitions for Aftermath SDK responses
+export interface AftermathTransaction {
+  target: `${string}::${string}::${string}`;
+  arguments: (string | number | boolean | bigint)[];
+  typeArguments: string[];
+}
+
+export interface PoolMetrics {
+  apr: string;
+  tvl: string;
+  fee: string;
+  volume: string;
+}
+
+export interface RankedPool {
+  id: string;
+  metrics: PoolMetrics;
+}
