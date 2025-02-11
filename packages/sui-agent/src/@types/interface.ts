@@ -164,16 +164,6 @@ export const COIN_ADDRESSES = {
   WSB: '0x4db126eac4fa99207e98db61d968477021fdeae153de3b244bcfbdc468ef0722::wsb::WSB',
 } as const;
 
-// Information about a liquidity pool
-export interface PoolInfo {
-  id: string; // Unique identifier for the pool
-  tokens: string[]; // Array of tokens in the pool
-  reserves: bigint[]; // Array of token reserves in the pool
-  fee: number; // Daily fees in USD
-  tvl: number; // Total Value Locked in USD
-  apr: number; // Annual Percentage Rate
-}
-
 // Structure for token balance information
 export interface TokenBalance {
   token: string; // Token address or identifier
@@ -205,11 +195,3 @@ export const NETWORK_CONFIG: NetworkConfigs = {
     faucet: 'https://faucet.testnet.sui.io/gas',
   },
 };
-
-interface Liquidation {
-  user: string;
-  liquidation_sender: string;
-  [key: string]: unknown; // Uses unknown instead of any
-}
-
-export type { Liquidation };

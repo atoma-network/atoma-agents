@@ -1,7 +1,7 @@
 import { NAVISDKClient } from 'navi-sdk';
 import { handleError } from '../../utils';
 import sentioApi from '../../config/sentio';
-import { Liquidation } from '../../@types/interface';
+import { Liquidation } from './types';
 // Initialize NAVI SDK client
 let naviClient: NAVISDKClient | null = null;
 
