@@ -29,7 +29,8 @@
     "dotenv": "^16.4.7",
     "mongoose": "^8.10.0",
     "navi-sdk": "^1.4.24",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "@suilend/sdk": "^1.1.36"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.6",

@@ -21,13 +21,36 @@ import {
   suiUSDT,
 } from 'navi-sdk';
 
-interface Liquidation {
+export type Liquidation = {
   user: string;
   liquidation_sender: string;
-  [key: string]: unknown;
-}
+};
 
-export type { Liquidation };
+export type NaviPool = {
+  pool_id: string;
+  token_a: {
+    address: string;
+    decimals: number;
+    symbol: string;
+  };
+  token_b: {
+    address: string;
+    decimals: number;
+    symbol: string;
+  };
+  lp_token_addr: string;
+  protocol: string;
+  dex: string;
+  pool_type: string;
+  coin_type_a: string;
+  coin_type_b: string;
+  decimals: number;
+  url: string;
+};
+
+export type NaviPoolsResponse = {
+  pools: NaviPool[];
+};
 
 export type {
   Sui,

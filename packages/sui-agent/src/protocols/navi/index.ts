@@ -1,7 +1,7 @@
 import { NAVISDKClient, Sui } from 'navi-sdk';
 import { handleError } from '../../utils';
 import sentioApi from '../../config/sentio';
-import { Liquidation } from './types';
+import { Liquidation, NaviPool, NaviPoolsResponse } from './types';
 
 // Initialize NAVI SDK client
 let naviClient: NAVISDKClient | null = null;
@@ -138,12 +138,10 @@ async function checkUserLiquidations(address: string) {
       ),
       totalLiquidations: liquidations.length,
     };
-  } catch (error) {
-    handleError(error, {
-      reasoning: 'Failed to fetch liquidation status for user ',
-      query: `Attempted to fetch liquidation status for user`,
-    });
-    console.error('Error checking user liquidations:', error);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('Error checking user liquidations:', errorMessage);
     return {
       asUser: [],
       asLiquidator: [],
@@ -156,16 +154,33 @@ export async function checkUserLiquidationStatusTool(
   ...args: (string | number | bigint | boolean)[]
 ): Promise<string> {
   const [walletAddress] = args as [string];
-  const result = await checkUserLiquidations(walletAddress);
-  return JSON.stringify([
-    {
-      reasoning: 'Successfully retrieved liquidation status',
-      response: JSON.stringify(result),
-      status: 'success',
-      query: `Check liquidation status for ${walletAddress}`,
-      errors: [],
-    },
-  ]);
+  try {
+    const result = await checkUserLiquidations(walletAddress);
+    return JSON.stringify([
+      {
+        reasoning: 'Successfully retrieved liquidation status',
+        response: {
+          liquidations: result,
+          address: walletAddress,
+        },
+        status: 'success',
+        query: `Check liquidation status for ${walletAddress}`,
+        errors: [],
+      },
+    ]);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred';
+    return JSON.stringify([
+      {
+        reasoning: 'Failed to retrieve liquidation status',
+        response: null,
+        status: 'failure',
+        query: `Check liquidation status for ${walletAddress}`,
+        errors: [errorMessage],
+      },
+    ]);
+  }
 }
 
 /**
@@ -174,21 +189,45 @@ export async function checkUserLiquidationStatusTool(
  * @returns JSON string with NAVI portfolio
  */
 
-export async function getNaviPortfolio(address: string) {
-  const account = naviClient?.accounts[0];
-  if (!account) {
-    throw new Error('NAVI SDK client not initialized');
+export async function getNaviPortfolio(
+  ...args: (string | number | bigint | boolean)[]
+): Promise<string> {
+  const [address] = args as [string];
+  await initializeNaviClient();
+  try {
+    if (!naviClient) {
+      throw new Error('NAVI SDK client not initialized');
+    }
+    const account = naviClient.accounts[0];
+    if (!account) {
+      throw new Error('No account found');
+    }
+    const result = await account.getNAVIPortfolio(address, true);
+    return JSON.stringify([
+      {
+        reasoning: 'Successfully retrieved NAVI portfolio',
+        response: {
+          portfolio: result,
+          address: address,
+        },
+        status: 'success',
+        query: `Get NAVI portfolio for ${address}`,
+        errors: [],
+      },
+    ]);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred';
+    return JSON.stringify([
+      {
+        reasoning: 'Failed to retrieve NAVI portfolio',
+        response: null,
+        status: 'failure',
+        query: `Get NAVI portfolio for ${address}`,
+        errors: [errorMessage],
+      },
+    ]);
   }
-  const result = account.getNAVIPortfolio(address, true);
-  return JSON.stringify([
-    {
-      reasoning: 'Successfully retrieved NAVI portfolio',
-      response: JSON.stringify(result),
-      status: 'success',
-      query: `Get NAVI portfolio for ${address}`,
-      errors: [],
-    },
-  ]);
 }
 
 /**
@@ -197,21 +236,41 @@ export async function getNaviPortfolio(address: string) {
  * @returns JSON string with available rewards
  */
 
-export async function getNaviAvailableRewards(address: string) {
-  const account = naviClient?.accounts[0];
-  if (!account) {
-    throw new Error('NAVI SDK client not initialized');
+export async function getNaviAvailableRewards(
+  ...args: (string | number | bigint | boolean)[]
+): Promise<string> {
+  const [address] = args as [string];
+  await initializeNaviClient();
+  try {
+    if (!naviClient) {
+      throw new Error('NAVI SDK client not initialized');
+    }
+    const result = await naviClient.getAddressAvailableRewards(address, 1);
+    return JSON.stringify([
+      {
+        reasoning: 'Successfully retrieved NAVI available rewards',
+        response: {
+          rewards: result,
+          address: address,
+        },
+        status: 'success',
+        query: `Get NAVI available rewards for ${address}`,
+        errors: [],
+      },
+    ]);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred';
+    return JSON.stringify([
+      {
+        reasoning: 'Failed to retrieve NAVI rewards',
+        response: null,
+        status: 'failure',
+        query: `Get NAVI available rewards for ${address}`,
+        errors: [errorMessage],
+      },
+    ]);
   }
-  const result = naviClient?.getAddressAvailableRewards(address, 1);
-  return JSON.stringify([
-    {
-      reasoning: 'Successfully retrieved NAVI available rewards',
-      response: JSON.stringify(result),
-      status: 'success',
-      query: `Get NAVI available rewards for ${address}`,
-      errors: [],
-    },
-  ]);
 }
 
 /**
@@ -220,17 +279,41 @@ export async function getNaviAvailableRewards(address: string) {
  * @returns JSON string with NAVI pools
  */
 
-export async function getNaviPools(coin: string) {
-  const result = naviClient?.getPoolInfo();
-  return JSON.stringify([
-    {
-      reasoning: 'Successfully retrieved NAVI pools',
-      response: JSON.stringify(result),
-      status: 'success',
-      query: `Get NAVI pools for ${coin}`,
-      errors: [],
-    },
-  ]);
+export async function getNaviPools(
+  ...args: (string | number | bigint | boolean)[]
+): Promise<string> {
+  const [coin] = args as [string];
+  await initializeNaviClient();
+  try {
+    if (!naviClient) {
+      throw new Error('NAVI SDK client not initialized');
+    }
+    const result = (await naviClient.getPoolInfo()) as NaviPool[];
+    return JSON.stringify([
+      {
+        reasoning: 'Successfully retrieved NAVI pools',
+        response: {
+          pools: result,
+          coin: coin,
+        } as NaviPoolsResponse & { coin: string },
+        status: 'success',
+        query: `Get NAVI pools for ${coin}`,
+        errors: [],
+      },
+    ]);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred';
+    return JSON.stringify([
+      {
+        reasoning: 'Failed to retrieve NAVI pools',
+        response: null,
+        status: 'failure',
+        query: `Get NAVI pools for ${coin}`,
+        errors: [errorMessage],
+      },
+    ]);
+  }
 }
 
 /**
@@ -240,21 +323,46 @@ export async function getNaviPools(coin: string) {
  * @returns JSON string with deposit result
  */
 
-export async function depositNavi(coin: string, amount: number) {
-  const account = naviClient?.accounts[0];
-  if (!account) {
-    throw new Error('NAVI SDK client not initialized');
+export async function depositNavi(
+  ...args: (string | number | bigint | boolean)[]
+): Promise<string> {
+  const [coin, amount] = args as [string, number];
+  await initializeNaviClient();
+  try {
+    if (!naviClient) {
+      throw new Error('NAVI SDK client not initialized');
+    }
+    const account = naviClient.accounts[0];
+    if (!account) {
+      throw new Error('No account found');
+    }
+    const result = await account.depositToNavi(Sui, amount);
+    return JSON.stringify([
+      {
+        reasoning: 'Successfully deposited NAVI',
+        response: {
+          transaction: result,
+          coin: coin,
+          amount: amount,
+        },
+        status: 'success',
+        query: `Deposit NAVI ${coin} ${amount}`,
+        errors: [],
+      },
+    ]);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred';
+    return JSON.stringify([
+      {
+        reasoning: 'Failed to deposit NAVI',
+        response: null,
+        status: 'failure',
+        query: `Deposit NAVI ${coin} ${amount}`,
+        errors: [errorMessage],
+      },
+    ]);
   }
-  const result = account.depositToNavi(Sui, amount);
-  return JSON.stringify([
-    {
-      reasoning: 'Successfully deposited NAVI',
-      response: JSON.stringify(result),
-      status: 'success',
-      query: `Deposit NAVI ${coin} ${amount}`,
-      errors: [],
-    },
-  ]);
 }
 
 /**
@@ -264,19 +372,44 @@ export async function depositNavi(coin: string, amount: number) {
  * @returns JSON string with withdrawal result
  */
 
-export async function withrawFromNavi(coin: string, amount: number) {
-  const account = naviClient?.accounts[0];
-  if (!account) {
-    throw new Error('NAVI SDK client not initialized');
+export async function withrawFromNavi(
+  ...args: (string | number | bigint | boolean)[]
+): Promise<string> {
+  const [coin, amount] = args as [string, number];
+  await initializeNaviClient();
+  try {
+    if (!naviClient) {
+      throw new Error('NAVI SDK client not initialized');
+    }
+    const account = naviClient.accounts[0];
+    if (!account) {
+      throw new Error('No account found');
+    }
+    const result = await account.withdraw(Sui, amount);
+    return JSON.stringify([
+      {
+        reasoning: 'Successfully withdrew from NAVI',
+        response: {
+          transaction: result,
+          coin: coin,
+          amount: amount,
+        },
+        status: 'success',
+        query: `Withdraw NAVI ${coin} ${amount}`,
+        errors: [],
+      },
+    ]);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error occurred';
+    return JSON.stringify([
+      {
+        reasoning: 'Failed to withdraw from NAVI',
+        response: null,
+        status: 'failure',
+        query: `Withdraw NAVI ${coin} ${amount}`,
+        errors: [errorMessage],
+      },
+    ]);
   }
-  const result = account.withdraw(Sui, amount);
-  return JSON.stringify([
-    {
-      reasoning: 'Successfully withdrew from NAVI',
-      response: JSON.stringify(result),
-      status: 'success',
-      query: `Withdraw NAVI ${coin} ${amount}`,
-      errors: [],
-    },
-  ]);
 }

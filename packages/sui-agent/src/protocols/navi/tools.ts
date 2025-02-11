@@ -4,7 +4,13 @@ import {
   getNaviAccount,
   fetchLiquidationsFromSentio,
   checkUserLiquidationStatusTool,
+  getNaviPortfolio,
+  getNaviAvailableRewards,
+  getNaviPools,
+  depositNavi,
+  withrawFromNavi,
 } from '../navi';
+
 class NaviTools {
   public static registerTools(tools: Tools) {
     tools.registerTool(
@@ -67,6 +73,88 @@ class NaviTools {
         },
       ],
       checkUserLiquidationStatusTool,
+    );
+
+    tools.registerTool(
+      'get_navi_portfolio',
+      'Tool to get NAVI portfolio for a specific address',
+      [
+        {
+          name: 'address',
+          type: 'string',
+          description: 'Address to get NAVI portfolio for',
+          required: true,
+        },
+      ],
+      getNaviPortfolio,
+    );
+
+    tools.registerTool(
+      'get_navi_rewards',
+      'Tool to get available NAVI rewards for a specific address',
+      [
+        {
+          name: 'address',
+          type: 'string',
+          description: 'Address to get available rewards for',
+          required: true,
+        },
+      ],
+      getNaviAvailableRewards,
+    );
+
+    tools.registerTool(
+      'get_navi_pools',
+      'Tool to get NAVI pools for a specific coin',
+      [
+        {
+          name: 'coin',
+          type: 'string',
+          description: 'Coin to get NAVI pools for',
+          required: true,
+        },
+      ],
+      getNaviPools,
+    );
+
+    tools.registerTool(
+      'deposit_navi',
+      'Tool to deposit NAVI for a specific coin',
+      [
+        {
+          name: 'coin',
+          type: 'string',
+          description: 'Coin to deposit NAVI for',
+          required: true,
+        },
+        {
+          name: 'amount',
+          type: 'number',
+          description: 'Amount to deposit',
+          required: true,
+        },
+      ],
+      depositNavi,
+    );
+
+    tools.registerTool(
+      'withdraw_navi',
+      'Tool to withdraw NAVI for a specific coin',
+      [
+        {
+          name: 'coin',
+          type: 'string',
+          description: 'Coin to withdraw NAVI for',
+          required: true,
+        },
+        {
+          name: 'amount',
+          type: 'number',
+          description: 'Amount to withdraw',
+          required: true,
+        },
+      ],
+      withrawFromNavi,
     );
   }
 }
