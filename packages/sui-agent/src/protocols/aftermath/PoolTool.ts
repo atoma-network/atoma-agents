@@ -89,37 +89,17 @@ class PoolTool {
       await sdk.init();
       const pools = await sdk.Pools().getPools({ objectIds: [] });
 
-      console.log('Raw pools from SDK:', JSON.stringify(pools, null, 2));
-      console.log('Number of pools from SDK:', pools.length);
-
       // Process all pools
       const processedPools = await Promise.all(
         pools.map(async (poolInstance) => {
-          console.log(
-            'Processing pool instance:',
-            JSON.stringify(poolInstance, null, 2),
-          );
-          if (!poolInstance.pool?.objectId) {
-            console.log('Pool instance missing objectId:', poolInstance);
-            return null;
-          }
+          if (!poolInstance.pool?.objectId) return null;
           return this.processPool(poolInstance, poolInstance.pool.objectId);
         }),
       );
 
-      console.log('Processed pools:', JSON.stringify(processedPools, null, 2));
-      console.log('Number of processed pools:', processedPools.length);
-
-      const validPools = processedPools.filter((pool): pool is PoolInfo => {
-        const isValid = pool !== null && pool.tokens.length > 0;
-        if (!isValid) {
-          console.log('Invalid pool:', pool);
-        }
-        return isValid;
-      });
-
-      console.log('Valid pools:', JSON.stringify(validPools, null, 2));
-      console.log('Number of valid pools:', validPools.length);
+      const validPools = processedPools.filter(
+        (pool): pool is PoolInfo => pool !== null && pool.tokens.length > 0,
+      );
 
       // Sort pools based on the specified metric
       const sortedPools = validPools.sort((a, b) => {
@@ -147,19 +127,11 @@ class PoolTool {
             valueB = b.tvl;
         }
 
-        console.log(
-          `Comparing pools - A: ${a.id} (${valueA}) vs B: ${b.id} (${valueB})`,
-        );
         return valueB - valueA; // Default to descending order
       });
 
-      console.log('Sorted pools:', JSON.stringify(sortedPools, null, 2));
-      console.log('Number of sorted pools:', sortedPools.length);
-
       // Take only the requested number of pools
       const topPools = sortedPools.slice(0, numPools);
-      console.log('Top pools:', JSON.stringify(topPools, null, 2));
-      console.log('Number of top pools:', topPools.length);
 
       // Format the response with ranking information
       const rankedPools = topPools.map((pool, index) => ({
@@ -172,8 +144,6 @@ class PoolTool {
           volume: `$${(pool.tvl * pool.fee).toLocaleString()}`, // Estimated volume
         },
       }));
-
-      console.log('Final ranked pools:', JSON.stringify(rankedPools, null, 2));
 
       return JSON.stringify([
         {
@@ -190,7 +160,6 @@ class PoolTool {
         },
       ]);
     } catch (error) {
-      console.error('Error in getRankedPools:', error);
       return JSON.stringify([
         handleError(error, {
           reasoning: 'Failed to retrieve ranked pools',
