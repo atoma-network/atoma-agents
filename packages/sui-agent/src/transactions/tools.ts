@@ -1,18 +1,24 @@
 import Tools from '../utils/tools';
+import { TransactionAgent } from './Transaction';
 import {
-  transferCoinWrapper,
-  multiTransferWrapper,
-  mergeCoinsWrapper,
-  estimateGasWrapper,
-  depositTopPoolsWrapper,
-  withdrawPoolsWrapper,
-  getStakingPositionsWrapper,
-  getSuiTvlWrapper,
-  getAfSuiExchangeRateWrapper,
-  getStakeTransactionWrapper,
-} from '../utils/toolWrappers';
+  TransferParams,
+  MultiTransferParams,
+  MergeCoinsParams,
+  PoolDepositParams,
+  PoolWithdrawParams,
+  StakingParams,
+} from './types';
 
-class Transaction {
+class TransactionTools {
+  private static agent: TransactionAgent;
+
+  private static async getAgent(): Promise<TransactionAgent> {
+    if (!this.agent) {
+      this.agent = new TransactionAgent();
+    }
+    return this.agent;
+  }
+
   public static registerTools(tools: Tools) {
     tools.registerTool(
       'transfer_coin',
@@ -43,7 +49,17 @@ class Transaction {
           required: true,
         },
       ],
-      transferCoinWrapper,
+      async (...args) => {
+        const agent = await this.getAgent();
+        const params: TransferParams = {
+          fromAddress: args[0] as string,
+          toAddress: args[1] as string,
+          tokenType: args[2] as string,
+          amount: BigInt(args[3] as string),
+        };
+        const tx = agent.buildTransferTx(params.amount, params.toAddress);
+        return JSON.stringify(tx.serialize());
+      },
     );
 
     tools.registerTool(
@@ -69,7 +85,16 @@ class Transaction {
           required: true,
         },
       ],
-      multiTransferWrapper,
+      async (...args) => {
+        const agent = await this.getAgent();
+        const params: MultiTransferParams = {
+          fromAddress: args[0] as string,
+          toAddress: args[1] as string,
+          transfers: JSON.parse(args[2] as string),
+        };
+        const tx = agent.buildMergeCoinsTx(params.transfers[0].tokenType, []);
+        return JSON.stringify(tx.serialize());
+      },
     );
 
     tools.registerTool(
@@ -95,24 +120,22 @@ class Transaction {
           required: false,
         },
       ],
-      mergeCoinsWrapper,
+      async (...args) => {
+        const agent = await this.getAgent();
+        const params: MergeCoinsParams = {
+          coinType: args[0] as string,
+          walletAddress: args[1] as string,
+          maxCoins: args[2] ? parseInt(args[2] as string) : undefined,
+        };
+        const coins = await agent.getCoins(params.walletAddress);
+        const sourceCoins = coins
+          .slice(1, params.maxCoins || 10)
+          .map((c) => c.coinObjectId);
+        const tx = agent.buildMergeCoinsTx(coins[0].coinObjectId, sourceCoins);
+        return JSON.stringify(tx.serialize());
+      },
     );
 
-    tools.registerTool(
-      'estimate_gas',
-      'Tool to estimate gas cost for a transaction',
-      [
-        {
-          name: 'transaction',
-          type: 'object',
-          description: 'Transaction block to estimate gas for',
-          required: true,
-        },
-      ],
-      estimateGasWrapper,
-    );
-
-    // Pool transaction tools
     tools.registerTool(
       'deposit_top_pools',
       'Tool to deposit funds into top pools',
@@ -148,7 +171,22 @@ class Transaction {
           required: true,
         },
       ],
-      depositTopPoolsWrapper,
+      async (...args) => {
+        const agent = await this.getAgent();
+        const params: PoolDepositParams = {
+          walletAddress: args[0] as string,
+          metric: args[1] as string,
+          amount: args[2] as string,
+          numPools: args[3] as string,
+          slippage: args[4] as string,
+        };
+        const tx = agent.buildMoveCallTx(
+          '0x2::pool::deposit',
+          [],
+          [params.amount],
+        );
+        return JSON.stringify(tx.serialize());
+      },
     );
 
     tools.registerTool(
@@ -180,10 +218,23 @@ class Transaction {
           required: true,
         },
       ],
-      withdrawPoolsWrapper,
+      async (...args) => {
+        const agent = await this.getAgent();
+        const params: PoolWithdrawParams = {
+          walletAddress: args[0] as string,
+          poolId: args[1] as string,
+          lpAmount: args[2] as string,
+          slippage: args[3] as string,
+        };
+        const tx = agent.buildMoveCallTx(
+          '0x2::pool::withdraw',
+          [],
+          [params.lpAmount],
+        );
+        return JSON.stringify(tx.serialize());
+      },
     );
 
-    // Staking Tools
     tools.registerTool(
       'get_staking_positions',
       'Tool to get staking positions for a wallet',
@@ -195,48 +246,16 @@ class Transaction {
           required: true,
         },
       ],
-      getStakingPositionsWrapper,
-    );
-
-    tools.registerTool(
-      'get_sui_tvl',
-      'Tool to get total SUI TVL in staking',
-      [],
-      getSuiTvlWrapper,
-    );
-
-    tools.registerTool(
-      'get_afsui_exchange_rate',
-      'Tool to get afSUI to SUI exchange rate',
-      [],
-      getAfSuiExchangeRateWrapper,
-    );
-
-    tools.registerTool(
-      'get_stake_transaction',
-      'Tool to generate a staking transaction',
-      [
-        {
-          name: 'walletAddress',
-          type: 'string',
-          description: 'Address of the wallet staking tokens',
-          required: true,
-        },
-        {
-          name: 'suiAmount',
-          type: 'string',
-          description: 'Amount of SUI to stake (in MIST)',
-          required: true,
-        },
-        {
-          name: 'validatorAddress',
-          type: 'string',
-          description: 'Address of the validator to stake with',
-          required: true,
-        },
-      ],
-      getStakeTransactionWrapper,
+      async (...args) => {
+        const agent = await this.getAgent();
+        const params: StakingParams = {
+          walletAddress: args[0] as string,
+        };
+        const balance = await agent.getBalance(params.walletAddress);
+        return JSON.stringify(balance);
+      },
     );
   }
 }
-export default Transaction;
+
+export default TransactionTools;

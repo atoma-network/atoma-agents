@@ -1,108 +1,135 @@
-## Navi Protocol Integration
+# Navi Protocol Integration
 
-The Sui Agent includes integration with the Navi Protocol, providing access to Navi's DeFi functionality and perpetual trading features.
+This module provides integration with the Navi perpetual trading protocol on Sui Network.
 
-### Features
+## Features
 
-#### Perpetual Trading
+- Order Management
+  - Place orders (market/limit)
+  - Cancel orders
+  - Get user orders
+- Position Management
+  - Open positions
+  - Close positions
+  - Get user positions
+  - Adjust leverage
+  - Adjust margin
+- Market Data
+  - Get orderbook
+  - Get market data
+  - Get funding rates
+- Account Management
+  - Get account info
+  - Get account balance
+  - Get account positions
 
-- Open and close positions
-- Manage leverage and margin
-- Monitor position metrics
-- Track funding rates
+## Tools
 
-#### Market Data
+### Order Management
 
-- Get real-time prices
-- View market statistics
-- Monitor trading volume
-- Track historical data
+#### `place_navi_order`
 
-#### Account Management
+Place a new order on Navi.
 
-- View account positions
-- Monitor margin levels
-- Track PnL
-- Manage collateral
+Parameters:
 
-### Example Usage
+- `symbol` (string, required): Trading pair symbol (e.g., "BTC-PERP")
+- `side` (string, required): Order side ("BUY" or "SELL")
+- `type` (string, required): Order type ("MARKET" or "LIMIT")
+- `quantity` (number, required): Order quantity
+- `price` (number, optional): Order price (required for LIMIT orders)
+- `leverage` (number, optional): Position leverage
+
+#### `cancel_navi_order`
+
+Cancel an existing order on Navi.
+
+Parameters:
+
+- `symbol` (string, required): Trading pair symbol
+- `order_id` (string, required): Order ID to cancel
+
+### Position Management
+
+#### `adjust_navi_position`
+
+Adjust position leverage on Navi.
+
+Parameters:
+
+- `symbol` (string, required): Trading pair symbol
+- `leverage` (number, required): New leverage value
+
+#### `adjust_navi_margin`
+
+Add or remove margin from a position.
+
+Parameters:
+
+- `symbol` (string, required): Trading pair symbol
+- `amount` (number, required): Amount to add/remove
+- `is_add` (boolean, required): True for adding margin, false for removing
+
+### Market Data
+
+#### `get_navi_orderbook`
+
+Get the orderbook for a trading pair.
+
+Parameters:
+
+- `symbol` (string, required): Trading pair symbol
+
+#### `get_navi_market_data`
+
+Get market data for a trading pair.
+
+Parameters:
+
+- `symbol` (string, required): Trading pair symbol
+
+### Account Management
+
+#### `get_navi_account_info`
+
+Get account information.
+
+Parameters:
+
+- `account_address` (string, required): Account address
+
+## Usage Example
 
 ```typescript
-// Initialize the agent
-const agent = new Agents(YOUR_BEARER_TOKEN);
+// Place a market order
+await tools.execute('place_navi_order', [
+  'BTC-PERP', // symbol
+  'BUY', // side
+  'MARKET', // type
+  1.0, // quantity
+]);
 
-// Get market information
-const marketInfo = await agent.SuperVisorAgent(
-  'Get Navi market information for BTC-PERP',
-);
-
-// Open a position
-const position = await agent.SuperVisorAgent(
-  'Open a long position on Navi BTC-PERP with 5x leverage and 100 USDC as margin',
-);
-
-// Check account positions
-const positions = await agent.SuperVisorAgent(
-  'Get my Navi positions for address 0x123...abc',
-);
-
-// Monitor funding rate
-const funding = await agent.SuperVisorAgent(
-  'Get current funding rate for Navi BTC-PERP market',
-);
+// Get account positions
+await tools.execute('get_navi_account_info', [
+  '0x1234...', // account_address
+]);
 ```
 
-### Supported Operations
+## Error Handling
 
-1. Trading Operations
-
-   - Open positions with leverage
-   - Close positions
-   - Adjust position size
-   - Modify leverage
-   - Set stop loss and take profit
-
-2. Market Operations
-
-   - Get market prices
-   - View order book depth
-   - Monitor funding rates
-   - Track trading volume
-   - View market statistics
-
-3. Account Operations
-   - View account positions
-   - Monitor margin levels
-   - Track realized/unrealized PnL
-   - Manage collateral deposits/withdrawals
-
-### Configuration
-
-The Navi integration uses the following environment variables:
-
-- `SUI_RPC_URL`: The Sui network RPC URL (defaults to mainnet)
-- `SUI_WALLET_ADDRESS`: The simulation account address
-
-### Error Handling
-
-All operations include comprehensive error handling and return standardized responses:
+All tools return responses in a standardized format:
 
 ```typescript
 {
-  reasoning: string;
-  response: any;
-  status: 'success' | 'error';
-  query: string;
-  errors: string[];
+  reasoning: string;     // Description of what happened
+  response: string;     // The actual response data
+  status: string;      // "success" or "failure"
+  query: string;       // The original query
+  errors: string[];    // Array of error messages if any
 }
 ```
 
-### Testing
+## Dependencies
 
-Integration tests are available in `src/tests/navi.test.ts`. To run the tests:
-
-```bash
-npm test -- navi.test.ts
-```
-
-Make sure to set the required environment variables before running tests.
+- @mysten/sui: ^1.1.0
+- Other Navi-specific dependencies
