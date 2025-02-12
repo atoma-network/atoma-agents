@@ -152,9 +152,7 @@ class TransactionTools {
       async (...args) => {
         try {
           // Get mnemonic from environment variable
-          const mnemonic =
-            process.env.SUI_MNEMONIC ||
-            'leisure gallery demise opinion genius alcohol romance body seminar raw conduct dentist';
+          const mnemonic = process.env.SUI_MNEMONIC;
           if (!mnemonic) {
             throw new Error('SUI_MNEMONIC environment variable is not set');
           }
