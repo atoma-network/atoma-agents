@@ -4,46 +4,45 @@ import PulseLoader from './components/ui/pulseLoader';
 import api from './lib/api';
 import { useWallet } from '@suiet/wallet-kit';
 import JSONFormatter from './utils/JSONFormatter';
-
 import Messages from './components/sections/Messages';
 import SampleQuestions from './components/sections/SampleQuestions';
-import LoadingPage from './components/ui/loadingPage';
-
+import { useRouter } from 'next/navigation';
 export default function Home() {
   const [messages, setMessages] = useState<
-    { text: string; sender: 'user' | 'llm'; isHTML?: boolean }[]
+    { message: string; sender: 'user' | 'ai'; isHTML?: boolean }[]
   >([]);
   const [inputValue, setInputValue] = useState('');
   const [isThinking, setIsThinking] = useState(false);
-  const { address, connected } = useWallet();
-  const [isLoading, setIsLoading] = useState(false);
+  const { address } = useWallet();
 
-  // Load chat history when wallet connects
-  useEffect(() => {
-    if (address && connected) {
-      loadChatHistory();
-      // // Send initial wallet connection message
-      // handleSend(`Connected wallet: ${address}`);
-    }
-  }, [address, connected]);
-
-  const loadChatHistory = async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get(`/query/history/${address}`);
-      setMessages(response.data);
-    } catch (error) {
-      console.error('Error loading chat history:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  const router = useRouter();
   const handleSend = async (message?: string) => {
     const userMessage = message || inputValue.trim();
+    //if connected , switch to chat conversation not anonymous mode
+    if (address) {
+      (async () => {
+        try {
+          const res = await api.post('/conversations/new', {
+            walletAddress: address
+          });
+          const { _id } = res.data;
+          router.push(`/conversations/${_id}`);
+          console.log(message, 'message');
+          await api.post(`/conversations/${_id}/messages`, {
+            sender: 'user',
+            message: userMessage,
+            walletAddress: address
+          });
+          window.location.reload();
+        } catch (error) {
+          console.log(error);
+          alert('failed to create new chat');
+        }
+      })();
+    }
 
     if (userMessage) {
-      setMessages((prev) => [...prev, { text: userMessage, sender: 'user' }]);
+      setMessages((prev) => [...prev, { message: userMessage, sender: 'user' }]);
       setInputValue('');
       setIsThinking(true);
 
@@ -63,14 +62,14 @@ export default function Home() {
           llmResponse = JSONFormatter.format(res.response);
         }
 
-        setMessages((prev) => [...prev, { text: llmResponse, sender: 'llm', isHTML: true }]);
+        setMessages((prev) => [...prev, { message: llmResponse, sender: 'ai', isHTML: true }]);
       } catch (error) {
         console.error('Error querying the LLM:', error);
         setMessages((prev) => [
           ...prev,
           {
-            text: 'Sorry, there was an error. Please try again.',
-            sender: 'llm',
+            message: 'Sorry, there was an error. Please try again.',
+            sender: 'ai',
             isHTML: false
           }
         ]);
@@ -79,11 +78,10 @@ export default function Home() {
       }
     }
   };
-  if (isLoading) return <LoadingPage />;
   return (
-    <div className="h-[90dvh] w-[90dvw] flex justify-center relative items-center flex-col bg-gradient-to-b from-white to-gray-100">
-      {/* Chat messages */}
-      <div className="flex-grow overflow-y-auto p-4 w-[82dvw] rounded mt-3 bg-transparent relative">
+    <div className="h-[90dvh] flex-1 flex justify-center relative items-center flex-col bg-gradient-to-b from-white to-gray-100">
+      {/* Change the messages container width to use flex-basis instead of fixed width */}
+      <div className="flex-grow overflow-y-auto p-4 w-full max-w-5xl rounded mt-3 bg-transparent relative">
         {/* Fixed background container */}
         <div className="fixed inset-0 flex justify-center items-center pointer-events-none">
           <img src="/atomaLogo.svg" alt="Logo" className="w-[300px] h-[200px] opacity-10" />

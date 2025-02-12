@@ -1,14 +1,15 @@
 import app from './app';
-import { connectDB, disconnectDB } from './utils/db';
+import { connectDB, disconnectDB } from './config/db';
 
-const port = process.env.PORT || 2512;
+import config from './config/config';
+const { port, env } = config;
 
 async function startServer() {
   try {
     await connectDB();
 
     const server = app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
+      console.log(`${env} Server is running on port ${port}`);
     });
 
     // Handle graceful shutdown

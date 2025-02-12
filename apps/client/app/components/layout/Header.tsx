@@ -7,8 +7,8 @@ const Header = () => {
   const { address, connected } = useWallet();
 
   return (
-    <div className="w-[75dvw] grid grid-cols-1 md:flex justify-between">
-      <span className="flex items-center">
+    <div className="w-[60dvw] grid grid-cols-1 md:flex justify-end">
+      {/* <span className="flex items-center">
         <Image src="/coinSageLogo.png" width={50} height={50} alt="atomasage logo" priority />
         <p
           style={{
@@ -18,7 +18,7 @@ const Header = () => {
         >
           AtomaSage
         </p>
-      </span>
+      </span> */}
 
       <div className="flex items-center gap-4">
         {connected && (

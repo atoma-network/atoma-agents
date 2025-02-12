@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import queryRouter from './query';
 import rootRouter from './root';
+import conversationRouter from './conversation.routes';
 
 /**
  * Router instance for v1 API endpoints
@@ -23,5 +24,6 @@ const v1Router: Router = Router();
  */
 v1Router.use('/', rootRouter); // Handles basic and health check routes
 v1Router.use('/query', queryRouter); // Handles query operations
+v1Router.use('/conversations', conversationRouter);
 
 export default v1Router;

@@ -3,6 +3,7 @@ import { keywords } from '../data';
 import api from '../lib/api';
 import JSONFormatter from './JSONFormatter';
 class Utils {
+  public getConversations = () => {};
   public handleSend = async (
     inputValue: string,
     setMessages: React.Dispatch<
