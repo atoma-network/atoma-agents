@@ -1,6 +1,8 @@
 import { CreateReserveConfigArgs } from '@suilend/sdk/_generated/suilend/reserve-config/functions';
 import { ClaimRewardsReward } from '@suilend/sdk/client';
 
+export { ClaimRewardsReward };
+
 export interface SuilendOrderParams {
   ownerId: string;
   obligationOwnerCapId: string;
@@ -16,6 +18,25 @@ export interface SuilendDepositParams {
   obligationOwnerCapId: string;
 }
 
+export interface SuilendDepositLiquidityParams {
+  ownerId: string;
+  coinType: string;
+  value: string;
+}
+
+export interface SuilendWithdrawParams {
+  ownerId: string;
+  obligationOwnerCapId: string;
+  obligationId: string;
+  coinType: string;
+  value: string;
+}
+
+export interface SuilendRedeemCtokensParams {
+  ownerId: string;
+  ctokenCoinTypes: string[];
+}
+
 export interface SuilendRewardParams {
   ownerId: string;
   lendingMarketOwnerCapId: string;
@@ -28,6 +49,14 @@ export interface SuilendRewardParams {
 }
 
 export interface SuilendCancelRewardParams {
+  lendingMarketOwnerCapId: string;
+  reserveArrayIndex: number;
+  isDepositReward: boolean;
+  rewardIndex: number;
+  rewardCoinType: string;
+}
+
+export interface SuilendCloseRewardParams {
   lendingMarketOwnerCapId: string;
   reserveArrayIndex: number;
   isDepositReward: boolean;
@@ -64,6 +93,18 @@ export interface SuilendLiquidateParams {
 export interface SuilendMarketParams {
   registryId: string;
   lendingMarketType: string;
+}
+
+export interface SuilendUpdateReserveConfigParams {
+  lendingMarketOwnerCapId: string;
+  coinType: string;
+  config: CreateReserveConfigArgs;
+}
+
+export interface SuilendChangePriceFeedParams {
+  lendingMarketOwnerCapId: string;
+  coinType: string;
+  pythPriceId: string;
 }
 
 export interface SuilendObligationParams {
