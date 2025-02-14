@@ -18,7 +18,7 @@ class PoolTool {
   }
 
   /**
-   * Gets information about a specific pool
+   * Gets information about a specific pool on Cetus
    * @param poolId The ID of the pool to get information for
    * @returns Pool information
    */
