@@ -12,12 +12,12 @@ export type ToolArgument = string | number | boolean | bigint;
 
 // Response interface for tool operations (similar to IntentAgentResponse)
 export interface toolResponse {
-  success: boolean;
-  selected_tool: null | string;
-  response: null | string;
-  needs_additional_info: boolean;
-  additional_info_required: null | string[];
-  tool_arguments: (string | number | boolean | bigint)[];
+  tools: string[];
+  reasoning: string;
+  response: string;
+  status: "success" | "error";
+  query: string;
+  errors: string[];
 }
 
 // Defines the structure for tool parameters
@@ -30,12 +30,15 @@ export interface ToolParameter {
 
 // Defines the structure for tools that can be used by the agent
 export interface Tool {
-  name: string; // Name of the tool
-  description: string; // Description of what the tool does
-  parameters: ToolParameter[]; // List of parameters the tool accepts
-  process: (
-    ...args: (string | number | boolean | bigint)[]
-  ) => Promise<string> | string; // Function to execute the tool
+  name: string;
+  description: string;
+  parameters: {
+    name: string;
+    type: string;
+    description: string;
+    required: boolean;
+  }[];
+  process: (...args: (string | number | boolean | bigint)[]) => Promise<string> | string;
 }
 
 // Mapping of different coin names/variants to their standardized symbol
@@ -195,3 +198,10 @@ export const NETWORK_CONFIG: NetworkConfigs = {
     faucet: 'https://faucet.testnet.sui.io/gas',
   },
 };
+
+export interface Protocol {
+  name: string;
+  description: string;
+  version: string;
+  tools: Tool[];
+}
