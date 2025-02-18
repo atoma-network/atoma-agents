@@ -2,7 +2,7 @@ import { IntentAgentResponse } from '../@types/interface';
 import Tools from '../utils/tools';
 import { registerAllTools } from './ToolRegistry';
 import Utils from '../utils';
-import intent_agent_prompt from '../prompts/intent_agent_prompt';
+import intent_agent_prompt from '../prompts/tool_selector';
 import final_answer_agent_prompt from '../prompts/final_answer_agent';
 import Atoma from '../config/atoma';
 import decomposerPrompt from '../prompts/decomposer';
@@ -13,7 +13,7 @@ import decomposerPrompt from '../prompts/decomposer';
  *
  * @example
  * const agent = new Agents("your-bearer-auth-token");
- * const response = await agent.SuperVisorAgent("What is the current price of the Sui token?");
+ * const response = await agent.processUserQueryPipeline("What is the current price of the Sui token?");
  * console.log(response);
  */
 class Agents {
@@ -41,7 +41,7 @@ class Agents {
    * @param prompt - User's input query
    * @returns IntentAgentResponse containing tool selection and processing details
    */
-  async IntentAgent(subqueries: string[], address?: string) {
+  async toolsSelector(subqueries: string[], address?: string) {
     const IntentResponse: IntentAgentResponse[] =
       (await this.tools.selectAppropriateTool(
         this.AtomaClass,
@@ -58,10 +58,7 @@ class Agents {
    * @param query - Original user query
    * @returns Processed response after decision making
    */
-  async DecisionMakingAgent(
-    intentResponse: IntentAgentResponse[],
-    query: string,
-  ) {
+  async QueryProcessor(intentResponse: IntentAgentResponse[], query: string) {
     // Pass both the selected tool name and arguments to processQuery
 
     return await this.utils.processQuery(
@@ -77,17 +74,17 @@ class Agents {
    * @param prompt - User's input query
    * @returns Final processed response
    */
-  async SuperVisorAgent(prompt: string, walletAddress?: string) {
+  async processUserQueryPipeline(prompt: string, walletAddress?: string) {
     // Process intent
     const decomposer = await this.QueryDecomposer(prompt);
     const decomposed: string[] = JSON.parse(
       decomposer.choices[0].message.content,
     );
     console.log(decomposed);
-    const res = await this.IntentAgent(decomposed, walletAddress);
+    const res = await this.toolsSelector(decomposed, walletAddress);
     console.log(res, 'this is intent agent response');
     // Make decision based on intent
-    const finalAnswer = await this.DecisionMakingAgent(res, prompt);
+    const finalAnswer = await this.QueryProcessor(res, prompt);
     console.log('Final Answer:', finalAnswer);
     return finalAnswer;
   }

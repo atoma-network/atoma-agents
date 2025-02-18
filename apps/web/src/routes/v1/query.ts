@@ -20,7 +20,7 @@ const handleQuery = async (req: Request, res: Response): Promise<void> => {
       return;
     }
     // Get agent response first
-    const result = await suiAgent.SuperVisorAgent(query);
+    const result = await suiAgent.processUserQueryPipeline(query);
     res.status(200).json(result);
   } catch (error) {
     console.error('Error handling query:', error);
