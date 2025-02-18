@@ -48,7 +48,7 @@ class Tools {
     AtomaClass: Atoma,
     query: string,
     walletAddress?: string,
-  ): Promise<toolResponse | null> {
+  ): Promise<toolResponse[] | null> {
     const finalPrompt = this.prompt.replace(
       '${toolsList}',
       JSON.stringify(this.getAllTools()),
@@ -68,13 +68,15 @@ class Tools {
       'choices' in response &&
       response.choices[0]?.message?.content
     ) {
+      console.log(response.choices[0].message.content);
       const parsedContent = JSON.parse(response.choices[0].message.content);
       if (Array.isArray(parsedContent) && parsedContent.length > 0) {
-        return parsedContent[0] as toolResponse;
+        return parsedContent as toolResponse[];
       }
     }
-
     return null;
+
+    //return response.choices[0]?.message.content as any || null;
   }
 
   /**

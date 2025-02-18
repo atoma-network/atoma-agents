@@ -1,7 +1,7 @@
 // Response interface for the intent agent's operations
 export interface IntentAgentResponse {
   success: boolean; // Indicates if the operation was successful
-  selected_tool: null | string; // Name of the tool that was selected for the operation
+  selected_tools: null | string[]; // Name of the tool that was selected for the operation
   response: null | string; // Response message from the operation
   needs_additional_info: boolean; // Indicates if more information is needed
   additional_info_required: null | string[]; // List of additional information fields needed
@@ -13,7 +13,7 @@ export type ToolArgument = string | number | boolean | bigint;
 // Response interface for tool operations (similar to IntentAgentResponse)
 export interface toolResponse {
   success: boolean;
-  selected_tool: null | string;
+  selected_tools: null | string;
   response: null | string;
   needs_additional_info: boolean;
   additional_info_required: null | string[];

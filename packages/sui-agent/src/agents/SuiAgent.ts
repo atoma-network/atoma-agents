@@ -5,6 +5,7 @@ import Utils from '../utils';
 import intent_agent_prompt from '../prompts/intent_agent_prompt';
 import final_answer_agent_prompt from '../prompts/final_answer_agent';
 import Atoma from '../config/atoma';
+import decomposerPrompt from '../prompts/decomposer';
 
 /**
  * Main agent class that handles intent processing and decision making
@@ -28,18 +29,25 @@ class Agents {
     registerAllTools(this.tools);
   }
 
+  async QueryDecomposer(prompt: string) {
+    return await this.AtomaClass.atomaChat([
+      { content: decomposerPrompt, role: 'assistant' },
+      { content: prompt, role: 'user' },
+    ]);
+  }
+
   /**
    * Processes initial user intent and selects appropriate tools
    * @param prompt - User's input query
    * @returns IntentAgentResponse containing tool selection and processing details
    */
-  async IntentAgent(prompt: string, address?: string) {
-    const IntentResponse: IntentAgentResponse =
+  async IntentAgent(subqueries: string[], address?: string) {
+    const IntentResponse: IntentAgentResponse[] =
       (await this.tools.selectAppropriateTool(
         this.AtomaClass,
-        prompt,
+        `${subqueries}`,
         address,
-      )) as IntentAgentResponse;
+      )) as IntentAgentResponse[];
 
     return IntentResponse;
   }
@@ -51,15 +59,15 @@ class Agents {
    * @returns Processed response after decision making
    */
   async DecisionMakingAgent(
-    intentResponse: IntentAgentResponse,
+    intentResponse: IntentAgentResponse[],
     query: string,
   ) {
     // Pass both the selected tool name and arguments to processQuery
+
     return await this.utils.processQuery(
       this.AtomaClass,
       query,
-      intentResponse.selected_tool,
-      intentResponse.tool_arguments,
+      intentResponse,
     );
   }
 
@@ -71,8 +79,13 @@ class Agents {
    */
   async SuperVisorAgent(prompt: string, walletAddress?: string) {
     // Process intent
-    const res = await this.IntentAgent(prompt, walletAddress);
-
+    const decomposer = await this.QueryDecomposer(prompt);
+    const decomposed: string[] = JSON.parse(
+      decomposer.choices[0].message.content,
+    );
+    console.log(decomposed);
+    const res = await this.IntentAgent(decomposed, walletAddress);
+    console.log(res, 'this is intent agent response');
     // Make decision based on intent
     const finalAnswer = await this.DecisionMakingAgent(res, prompt);
     console.log('Final Answer:', finalAnswer);

@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { AtomaSDK } from 'atoma-sdk';
 import Atoma from '../config/atoma';
 import Tools from './tools';
-import { ToolArgument } from '../@types/interface';
+import { IntentAgentResponse, ToolArgument } from '../@types/interface';
 
 /**
  * Utility class for processing agent responses and making decisions
@@ -38,19 +38,49 @@ class Utils {
   async processQuery(
     AtomaInstance: Atoma,
     query: string,
-    selectedTool: string | null,
-    toolArguments: ToolArgument[] = [],
+    intentResponses: IntentAgentResponse[],
   ) {
     try {
-      if (!selectedTool) {
+      if (!intentResponses || intentResponses.length === 0) {
         return this.finalAnswer(
           AtomaInstance,
-          'No tool selected for the query',
+          'No tools selected for the query',
           query,
         );
       }
 
-      return this.executeTools(selectedTool, toolArguments, AtomaInstance);
+      let aggregatedResults = '';
+
+      for (const response of intentResponses) {
+        const { selected_tools, tool_arguments } = response;
+
+        if (!selected_tools?.length) {
+          continue; // Skip if no tool selected
+        }
+        console.log(selected_tools, 'selected tools /...');
+        // Execute the tool and append its result
+        const result = await this.executeTools(selected_tools, tool_arguments);
+
+        // Aggregate results (you might want to customize this based on your needs)
+        aggregatedResults += result + '\n';
+      }
+
+      // If no tools were successfully executed
+      if (!aggregatedResults) {
+        return this.finalAnswer(
+          AtomaInstance,
+          'No valid tools were executed for the query',
+          query,
+        );
+      }
+
+      // Return final answer with aggregated results
+      return this.finalAnswer(
+        AtomaInstance,
+        aggregatedResults.trim(),
+        query,
+        intentResponses.map((r) => r.selected_tools).join(', '),
+      );
     } catch (error: unknown) {
       console.error('Error processing query:', error);
       return handleError(error, {
@@ -61,14 +91,28 @@ class Utils {
     }
   }
 
-  /**
-   * Format final answer
-   * @param response - Raw response
-   * @param query - Original query
-   * @param tools - Tools used
-   * @returns Formatted response
-   * @private
-   */
+  private async executeTools(
+    selected_tool: string[],
+    args: ToolArgument[] | null,
+  ) {
+    const tool = this.tools
+      .getAllTools()
+      .find((t) => t.name.trim() === selected_tool[0]);
+
+    if (!tool) {
+      throw new Error(`Tool ${selected_tool} not found`);
+    }
+
+    try {
+      const toolArgs = args || [];
+      const result = await tool.process(...toolArgs);
+      return result;
+    } catch (error: unknown) {
+      console.error('Error executing tool:', error);
+      throw error; // Let the main processQuery handle the error
+    }
+  }
+
   private async finalAnswer(
     AtomaInstance: Atoma,
     response: string,
@@ -80,62 +124,15 @@ class Utils {
       .replace('${response}', response)
       .replace('tools', `${tools || null}`);
 
-    // const finalAns = await new AtomaSDK({bearerAuth:'bearer auth here'}).chat.create({
-    //   messages: [
-    //     {role:"assistant",content:finalPrompt},
-    //   //  { role: "user", content: query }
-    //   ],
-    //   model: "meta-llama/Llama-3.3-70B-Instruct"
-    // });
-
     const finalAns = await AtomaInstance.atomaChat([
       { role: 'assistant', content: finalPrompt },
       { role: 'user', content: query },
     ]);
-    console.log('new one');
 
-    // const finalAns = await atomaChat(this.sdk, [
-    //   {
-    //     content: finalPrompt,
-    //     role: 'assistant',
-    //   },
-    // ]);
     const res = finalAns.choices[0].message.content;
-    console.log(finalPrompt);
-    return JSON.parse(res);
-  }
-
-  /**
-   * Executes selected tools with provided arguments
-   * @param selected_tool - Name of the tool to execute
-   * @param args - Arguments to pass to the tool
-   * @returns Processed tool response
-   * @private
-   */
-  private async executeTools(
-    selected_tool: string,
-    args: ToolArgument[] | null,
-    AtomaInstance: Atoma,
-  ) {
-    const tool = this.tools.getAllTools().find((t) => t.name === selected_tool);
-    console.log('Selected tool:', selected_tool);
-    console.log('Tool arguments:', args);
-
-    if (!tool) {
-      throw new Error(`Tool ${selected_tool} not found`);
-    }
-
-    try {
-      const toolArgs = args || [];
-      const result = await tool.process(...toolArgs);
-      return await this.finalAnswer(AtomaInstance, result, '', selected_tool);
-    } catch (error: unknown) {
-      console.error('Error executing tool:', error);
-      return handleError(error, {
-        reasoning: `The system encountered an issue while executing the tool ${selected_tool}`,
-        query: `Attempted to execute ${selected_tool} with arguments: ${JSON.stringify(args)}`,
-      });
-    }
+    const parsedRes = JSON.parse(res);
+    console.log(parsedRes, 'parsed response');
+    return parsedRes;
   }
 }
 
