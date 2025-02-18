@@ -1,4 +1,21 @@
-// Response interface for the intent agent's operations
+/**
+ * Core Type Definitions for the Atoma AI Agent System
+ * This file contains all the essential interfaces and types used throughout the agent.
+ *
+ * The type system is designed to ensure:
+ * 1. Type Safety - Strong typing for all agent operations
+ * 2. Consistency - Standardized interfaces across the system
+ * 3. Extensibility - Easy addition of new tools and features
+ *
+ * @module Types
+ */
+
+/**
+ * Response interface for the intent agent's operations.
+ * Represents the structured output from tool selection and execution.
+ *
+ * @interface IntentAgentResponse
+ */
 export interface IntentAgentResponse {
   success: boolean; // Indicates if the operation was successful
   selected_tools: null | string[]; // Name of the tool that was selected for the operation
@@ -8,9 +25,20 @@ export interface IntentAgentResponse {
   tool_arguments: (string | number | boolean | bigint)[]; // Arguments passed to the tool
 }
 
+/**
+ * Basic type for tool arguments.
+ * Supports common primitive types used in tool execution.
+ *
+ * @typedef ToolArgument
+ */
 export type ToolArgument = string | number | boolean | bigint;
 
-// Response interface for tool operations (similar to IntentAgentResponse)
+/**
+ * Response interface for tool operations.
+ * Similar structure to IntentAgentResponse for consistency.
+ *
+ * @interface toolResponse
+ */
 export interface toolResponse {
   success: boolean;
   selected_tools: null | string;
@@ -20,7 +48,12 @@ export interface toolResponse {
   tool_arguments: (string | number | boolean | bigint)[];
 }
 
-// Defines the structure for tool parameters
+/**
+ * Defines the structure for tool parameters.
+ * Used in tool registration and validation.
+ *
+ * @interface ToolParameter
+ */
 export interface ToolParameter {
   name: string; // Name of the parameter
   type: string; // Data type of the parameter
@@ -28,7 +61,12 @@ export interface ToolParameter {
   required: boolean; // Whether the parameter is mandatory
 }
 
-// Defines the structure for tools that can be used by the agent
+/**
+ * Defines the structure for tools that can be used by the agent.
+ * Core interface for all tool implementations.
+ *
+ * @interface Tool
+ */
 export interface Tool {
   name: string; // Name of the tool
   description: string; // Description of what the tool does
@@ -38,8 +76,21 @@ export interface Tool {
   ) => Promise<string> | string; // Function to execute the tool
 }
 
-// Mapping of different coin names/variants to their standardized symbol
-// This helps in recognizing different ways users might refer to the same coin
+/**
+ * Mapping of different coin names/variants to their standardized symbol.
+ * Helps in recognizing different ways users might refer to the same coin.
+ *
+ * Key Features:
+ * - Case-insensitive matching
+ * - Multiple variants per coin
+ * - Standardized output symbols
+ *
+ * TODO:
+ * - Add support for more coin variants
+ * - Add support for token metadata
+ *
+ * @const COIN_SYNONYMS
+ */
 export const COIN_SYNONYMS: Record<string, string> = {
   // SUI and variants
   SUI: 'SUI',
@@ -124,8 +175,16 @@ export const COIN_SYNONYMS: Record<string, string> = {
   WSBCOIN: 'WSB',
 } as const;
 
-// Mapping of coin symbols to their respective addresses on the Sui network
-// These addresses are used to interact with the coins on the blockchain
+/**
+ * Mapping of coin symbols to their respective addresses on the Sui network.
+ * Used for blockchain interactions and token operations.
+ *
+ * Features:
+ * - Mainnet addresses
+ * - Type information
+ * - Standardized format
+ * @const COIN_ADDRESSES
+ */
 export const COIN_ADDRESSES = {
   SUI: '0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI',
   USDC: '0x549e8b69270defbfafd4f94e17ec44cdbdd99820b33bda2278dea3b9a32d3f55::cert::CERT',
@@ -164,7 +223,12 @@ export const COIN_ADDRESSES = {
   WSB: '0x4db126eac4fa99207e98db61d968477021fdeae153de3b244bcfbdc468ef0722::wsb::WSB',
 } as const;
 
-// Structure for token balance information
+/**
+ * Structure for token balance information.
+ * Used for representing token holdings and balances.
+ *
+ * @interface TokenBalance
+ */
 export interface TokenBalance {
   token: string; // Token address or identifier
   amount: bigint; // Token amount
@@ -172,19 +236,33 @@ export interface TokenBalance {
   decimals?: number; // Number of decimal places for the token (optional)
 }
 
-// Configuration for a specific network (mainnet or testnet)
+/**
+ * Configuration for a specific network (mainnet or testnet).
+ * Contains network-specific endpoints and settings.
+ *
+ * @interface NetworkConfig
+ */
 export interface NetworkConfig {
   fullnode: string; // URL for the network's fullnode
   faucet?: string; // URL for the network's faucet (optional)
 }
 
-// Configuration for all supported networks
+/**
+ * Configuration for all supported networks.
+ * Manages configurations for different network environments.
+ *
+ * @interface NetworkConfigs
+ */
 export interface NetworkConfigs {
   MAINNET: NetworkConfig; // Mainnet configuration
   TESTNET: NetworkConfig; // Testnet configuration
 }
 
-// Network configuration constants
+/**
+ * Network configuration constants.
+ * Defines the default network endpoints and settings.
+ * @const NETWORK_CONFIG
+ */
 export const NETWORK_CONFIG: NetworkConfigs = {
   MAINNET: {
     fullnode: 'https://fullnode.mainnet.sui.io',

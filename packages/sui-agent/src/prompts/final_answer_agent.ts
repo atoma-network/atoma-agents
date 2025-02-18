@@ -1,26 +1,62 @@
 /**
- * Prompt template for the final answer agent that standardizes and structures raw responses.
+ * Final Answer Agent Prompt for the Atoma AI Agent
+ * This prompt template standardizes and structures the agent's responses into a consistent format.
  *
- * @description
- * This template takes a user query, raw response, and tool usage information to produce
- * a consistently formatted response object with the following structure:
+ * The Final Answer Agent serves as the last stage in the processing pipeline:
+ * 1. Response Standardization - Ensures consistent output structure
+ * 2. Transaction Formatting - Special handling for blockchain transactions
+ * 3. Error Management - Proper error reporting and status tracking
  *
+ * Response Structure:
  * {
- *   reasoning: string     - Explanation of the agent's thought process
- *   response: string|JSON - The formatted answer or JSON object
- *   status: "success"|"failure" - Execution status
- *   query: string        - Original user query
- *   errors: any[]        - Array of encountered errors, if any
+ *   reasoning: string     - Detailed explanation of the agent's logic and decisions
+ *   response: string|JSON - Formatted answer or structured JSON data
+ *   status: "success"|"failure" - Overall execution status
+ *   query: string        - Original user query for context
+ *   errors: any[]        - Comprehensive error reporting
  * }
  *
- * For transaction responses, format the response string as:
- * - Success: "Transaction successful! ✅\nView on SuiVision: https://suivision.xyz/txblock/{digest}\n\nDetails:\n- Amount: {amount} SUI\n- From: {sender}\n- To: {recipient}\n- Network: {network}"
- * - Failure: "Transaction failed ❌\n{error_message}\n\nPlease check:\n- You have enough SUI for transfer and gas\n- The recipient address is correct\n- Try again or use a smaller amount"
+ * Transaction Response Format:
+ * Success Template:
+ * ```
+ * Transaction successful! ✅
+ * View on SuiVision: https://suivision.xyz/txblock/{digest}
  *
- * @example
- * The template enforces strict response formatting to ensure consistent
- * output structure across different tool executions.
+ * Details:
+ * - Amount: {amount} SUI
+ * - From: {sender}
+ * - To: {recipient}
+ * - Network: {network}
+ * ```
+ *
+ * Failure Template:
+ * ```
+ * Transaction failed ❌
+ * {error_message}
+ *
+ * Please check:
+ * - You have enough SUI for transfer and gas
+ * - The recipient address is correct
+ * - Try again or use a smaller amount
+ * ```
+ *
+ * Key Features:
+ * - Consistent response formatting
+ * - Human-readable transaction details
+ * - Comprehensive error reporting
+ * - Network-aware transaction links
+ * - Emoji usage for visual status indication
+ *
+ * TODO:
+ * - Add support for response templating
+ * - Implement response validation
+ * - Add support for multiple transaction types
+ * - Implement response localization
+ * - Add support for rich media responses
+ * - Implement response compression for large datasets
+ * - Add support for streaming responses
  */
+
 export default `this is the User query:\${query} and this is what your raw response \${response}. 
 \${tools} tools were used.
 This is raw and unrefined

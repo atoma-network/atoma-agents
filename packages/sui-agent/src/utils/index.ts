@@ -5,14 +5,29 @@ import Tools from './tools';
 import { IntentAgentResponse, ToolArgument } from '../@types/interface';
 
 /**
- * Utility class for processing agent responses and making decisions
- * Handles the execution of tools and formatting of final responses
+ * Core utility class for processing agent responses and orchestrating tool execution.
+ * This class serves as the central coordinator for:
+ * 1. Query Processing - Executes tools based on intent analysis
+ * 2. Response Aggregation - Combines results from multiple tools
+ * 3. Error Handling - Manages failures and generates structured errors
+ *
+ * The class implements a robust pipeline for:
+ * - Tool execution and coordination
+ * - Response formatting and standardization
+ * - Error recovery and reporting
  */
 class Utils {
   private sdk: AtomaSDK;
   private prompt: string;
   private tools: Tools;
 
+  /**
+   * Creates a new Utils instance with authentication and prompt template.
+   *
+   * @param bearerAuth - Authentication token for API access
+   * @param prompt - Template for final answer generation
+   * @param tools - Optional Tools instance for execution
+=   */
   constructor(bearerAuth: string, prompt: string, tools?: Tools) {
     this.sdk = new AtomaSDK({ bearerAuth });
     this.prompt = prompt;
@@ -21,19 +36,35 @@ class Utils {
   }
 
   /**
-   * Set tools instance
-   * @param tools - Tools instance to use
+   * Updates the tools instance used for execution.
+   *
+   * @param tools - New Tools instance to use
+   *
+   * TODO:
+   * - Implement graceful tool transition
    */
   setTools(tools: Tools) {
     this.tools = tools;
   }
 
   /**
-   * Process user query and execute appropriate tool
-   * @param query - User query
-   * @param selectedTool - Name of the tool to execute
-   * @param toolArguments - Arguments to pass to the tool
-   * @returns Processed response
+   * Processes user queries by executing appropriate tools and aggregating results.
+   * Core orchestration method that:
+   * 1. Validates intent responses
+   * 2. Executes selected tools
+   * 3. Aggregates results
+   * 4. Generates final response
+   *
+   * @param AtomaInstance - Instance of Atoma for LLM access
+   * @param query - Original user query
+   * @param intentResponses - Array of tool selection responses
+   * @returns Processed and formatted final response
+   *
+   * TODO:
+   * - Implement parallel tool execution
+   * - Implement progressive response streaming
+   * - Add execution timeouts
+   * - Implement response quality validation
    */
   async processQuery(
     AtomaInstance: Atoma,
@@ -91,6 +122,19 @@ class Utils {
     }
   }
 
+  /**
+   * Executes selected tools with provided arguments.
+   * Handles tool lookup and execution with error management.
+   *
+   * @param selected_tool - Array of tool names to execute
+   * @param args - Arguments to pass to the tools
+   * @returns Tool execution result
+   *
+   * TODO:
+   * - Implement retry mechanism
+   * - Implement tool execution timeouts
+   * - Implement execution metrics
+   */
   private async executeTools(
     selected_tool: string[],
     args: ToolArgument[] | null,
@@ -113,6 +157,19 @@ class Utils {
     }
   }
 
+  /**
+   * Generates the final answer using the Atoma LLM.
+   * Formats and structures the response according to the template.
+   *
+   * @param AtomaInstance - Instance of Atoma for LLM access
+   * @param response - Raw response to format
+   * @param query - Original user query
+   * @param tools - Optional tools used in processing
+   * @returns Formatted and structured final response
+   *
+   * TODO:
+   * - Implement response quality checks
+   */
   private async finalAnswer(
     AtomaInstance: Atoma,
     response: string,
@@ -139,7 +196,18 @@ class Utils {
 export default Utils;
 
 /**
- * Define custom error type for structured error responses
+ * Structured error type for consistent error reporting.
+ * Ensures all errors follow a standard format with:
+ * - Reasoning for the error
+ * - Error response message
+ * - Failure status indicator
+ * - Original query context
+ * - Detailed error information
+ *
+ * TODO:
+ * - Add error categorization
+ * - Implement error severity levels
+ * - Add support for error recovery hints
  */
 export type StructuredError = {
   reasoning: string;
@@ -150,14 +218,36 @@ export type StructuredError = {
 };
 
 /**
- * Type guard for Error objects
+ * Type guard for Error objects.
+ * Ensures type safety when handling unknown error types.
+ *
+ * @param error - Unknown error object to check
+ * @returns Type predicate indicating if error is Error instance
  */
 export function isError(error: unknown): error is Error {
   return error instanceof Error;
 }
 
 /**
- * Generic error handler that creates a structured error response
+ * Generic error handler for creating structured error responses.
+ * Provides consistent error formatting and unique error IDs.
+ *
+ * Features:
+ * - Unique error identification
+ * - Consistent error structure
+ * - Error type normalization
+ * - Context preservation
+ *
+ * @param error - The error to handle
+ * @param context - Error context including reasoning and query
+ * @returns Structured error response
+ *
+ * TODO:
+ * - Add error categorization
+ * - Implement error recovery suggestions
+ * - Add error tracking integration
+ * - Implement error rate limiting
+ * - Add support for error aggregation
  */
 export function handleError(
   error: unknown,

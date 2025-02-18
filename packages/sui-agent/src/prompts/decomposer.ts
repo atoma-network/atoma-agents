@@ -1,3 +1,30 @@
+/**
+ * Query Decomposer Prompt for the Atoma AI Agent
+ * This prompt guides the LLM in breaking down complex user queries into simpler subqueries.
+ *
+ * The decomposer serves several critical functions:
+ * 1. Query Analysis - Determines if a query needs to be broken down
+ * 2. Logical Separation - Splits complex queries into independent subqueries
+ * 3. Execution Order - Maintains proper sequence of operations
+ *
+ * Key Features:
+ * - Intelligent query splitting based on tool requirements
+ * - Preservation of logical dependencies
+ * - Self-contained subquery generation
+ *
+ * Output Format:
+ * - Returns JSON array of strings
+ * - Single queries remain as single-element arrays
+ * - Complex queries split into ordered subqueries
+ *
+ * TODO:
+ * - Add support for query optimization hints
+ * - Implement context preservation between subqueries
+ * - Add validation rules for subquery dependencies
+ * - Implement complexity scoring for better splitting decisions
+ * - Add support for parallel execution hints
+ */
+
 export default "You are the Query Decomposer.\n\n\
 \n\
 Your task is to analyze the user's query and break it into multiple subqueries **only if necessary**, following strict rules.\n\n\
