@@ -17,7 +17,7 @@ process.env.SUI_WALLET_ADDRESS =
 export const cetusSDK = initCetusSDK({
   network: 'mainnet',
   fullNodeUrl: process.env.SUI_RPC_URL,
-  simulationAccount: process.env.SUI_WALLET_ADDRESS,
+  wallet: process.env.SUI_WALLET_ADDRESS,
 });
 
 // Test constants

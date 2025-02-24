@@ -11,7 +11,7 @@ class PoolTool {
         network: 'mainnet',
         fullNodeUrl:
           process.env.SUI_RPC_URL || 'https://fullnode.mainnet.sui.io',
-        simulationAccount: process.env.SUI_WALLET_ADDRESS || '',
+        wallet: process.env.SUI_WALLET_ADDRESS || '',
       });
     }
     return this.sdk;
