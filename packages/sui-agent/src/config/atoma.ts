@@ -56,3 +56,5 @@ class Atoma {
 }
 
 export default Atoma;
+
+export { AtomaSDK };

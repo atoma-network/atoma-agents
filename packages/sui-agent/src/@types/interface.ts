@@ -195,3 +195,14 @@ export const NETWORK_CONFIG: NetworkConfigs = {
     faucet: 'https://faucet.testnet.sui.io/gas',
   },
 };
+
+// Add this to your existing interfaces
+export interface ChatResponse {
+  model: string;
+  choices: Array<{
+    message: {
+      role: string;
+      content: string;
+    };
+  }>;
+}
