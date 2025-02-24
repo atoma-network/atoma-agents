@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { Request, Response } from 'express';
 import config from '../../config/config';
 import Agent from '@atoma-agents/sui-agent/src/agents/SuiAgent';
+import { checkAtomaSDK } from '../../logs/atomaHealth';
 const { atomaSdkBearerAuth } = config.auth;
 const suiAgent = new Agent(atomaSdkBearerAuth);
 const queryRouter: Router = Router();
@@ -9,6 +10,10 @@ const queryRouter: Router = Router();
 queryRouter.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'healthy' });
 });
+
+// Run Atoma SDK check when router is initialized
+checkAtomaSDK(atomaSdkBearerAuth);
+
 // Query endpoint
 const handleQuery = async (req: Request, res: Response): Promise<void> => {
   try {
