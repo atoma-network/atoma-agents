@@ -5,7 +5,6 @@ import TradeTool from './TradeTool';
 import { getCoinPrice, coinsToPrice } from './PriceTool';
 import { getTokenAPR } from './apr';
 import StakingTool from './staking';
-import { RankingMetric } from './types';
 
 class AftermathTools {
   private static sdk: Aftermath | null = null;
@@ -48,24 +47,17 @@ class AftermathTools {
     );
 
     tools.registerTool(
-      'get ranked pools on Aftermath',
-      'Get ranked pools by a specific metric',
+      'get pool stats',
+      'Get the stats of a pool on Aftermath by pool id. This will return the volume, tvl, supply per lps, lp price, fees, and apr of the pool.',
       [
         {
-          name: 'metric',
+          name: 'pool_id',
           type: 'string',
-          description: 'Metric to rank by (apr, tvl, fees, volume)',
+          description: 'The pool ID to get stats for',
           required: true,
         },
-        {
-          name: 'limit',
-          type: 'number',
-          description: 'Number of pools to return',
-          required: false,
-        },
       ],
-      async (...args) =>
-        PoolTool.getRankedPools(args[0] as RankingMetric, args[1] as number),
+      async (...args) => PoolTool.getPoolStats(args[0] as string),
     );
 
     tools.registerTool(
@@ -133,28 +125,6 @@ class AftermathTools {
           args[1] as string,
           args[2] as number,
         ),
-    );
-
-    // Pool Ranking Tools
-    tools.registerTool(
-      'get_ranked_pools',
-      'Get top pools ranked by a specific metric on Aftermath',
-      [
-        {
-          name: 'metric',
-          type: 'string',
-          description: 'Metric to rank by (apr, tvl, fees, volume)',
-          required: true,
-        },
-        {
-          name: 'limit',
-          type: 'number',
-          description: 'Number of pools to return',
-          required: false,
-        },
-      ],
-      async (...args) =>
-        PoolTool.getRankedPools(args[0] as RankingMetric, args[1] as number),
     );
 
     // Trading Tools
@@ -299,6 +269,165 @@ class AftermathTools {
           afSuiAmount: BigInt(args[1] as string),
           isAtomic: (args[2] as boolean) ?? true,
         }),
+    );
+
+    // Add after existing pool tools
+    tools.registerTool(
+      'get_pool_deposit_transaction',
+      'Create a deposit transaction for a pool on Aftermath',
+      [
+        {
+          name: 'pool_id',
+          type: 'string',
+          description: 'The pool ID to deposit into',
+          required: true,
+        },
+        {
+          name: 'wallet_address',
+          type: 'string',
+          description: 'Address of the depositing wallet',
+          required: true,
+        },
+        {
+          name: 'amounts_in',
+          type: 'string',
+          description:
+            'JSON string of token amounts to deposit (e.g., {"SUI":"1000000"})',
+          required: true,
+        },
+        {
+          name: 'slippage',
+          type: 'number',
+          description: 'Maximum slippage percentage',
+          required: true,
+        },
+        {
+          name: 'referrer',
+          type: 'string',
+          description: 'Optional referrer address',
+          required: false,
+        },
+      ],
+      async (...args) =>
+        PoolTool.getDepositTransaction(
+          args[0] as string,
+          args[1] as string,
+          JSON.parse(args[2] as string),
+          args[3] as number,
+          args[4] as string,
+        ),
+    );
+
+    tools.registerTool(
+      'get_pool_withdraw_transaction',
+      'Create a withdraw transaction for a pool on Aftermath',
+      [
+        {
+          name: 'pool_id',
+          type: 'string',
+          description: 'The pool ID to withdraw from',
+          required: true,
+        },
+        {
+          name: 'wallet_address',
+          type: 'string',
+          description: 'Address of the withdrawing wallet',
+          required: true,
+        },
+        {
+          name: 'amounts_out',
+          type: 'string',
+          description:
+            'JSON string of token amounts to withdraw (e.g., {"SUI":"1000000"})',
+          required: true,
+        },
+        {
+          name: 'lp_amount',
+          type: 'string',
+          description: 'Amount of LP tokens to burn',
+          required: true,
+        },
+        {
+          name: 'slippage',
+          type: 'number',
+          description: 'Maximum slippage percentage',
+          required: true,
+        },
+        {
+          name: 'referrer',
+          type: 'string',
+          description: 'Optional referrer address',
+          required: false,
+        },
+      ],
+      async (...args) =>
+        PoolTool.getWithdrawTransaction(
+          args[0] as string,
+          args[1] as string,
+          JSON.parse(args[2] as string),
+          BigInt(args[3] as string),
+          args[4] as number,
+          args[5] as string,
+        ),
+    );
+
+    tools.registerTool(
+      'get_pool_trade_transaction',
+      'Create a trade transaction for a pool on Aftermath',
+      [
+        {
+          name: 'pool_id',
+          type: 'string',
+          description: 'The pool ID to trade in',
+          required: true,
+        },
+        {
+          name: 'wallet_address',
+          type: 'string',
+          description: 'Address of the trading wallet',
+          required: true,
+        },
+        {
+          name: 'coin_in_type',
+          type: 'string',
+          description: 'Type of input coin',
+          required: true,
+        },
+        {
+          name: 'coin_in_amount',
+          type: 'string',
+          description: 'Amount of input coin',
+          required: true,
+        },
+        {
+          name: 'coin_out_type',
+          type: 'string',
+          description: 'Type of output coin',
+          required: true,
+        },
+        {
+          name: 'slippage',
+          type: 'number',
+          description: 'Maximum slippage percentage',
+          required: true,
+        },
+        {
+          name: 'referrer',
+          type: 'string',
+          description: 'Optional referrer address',
+          required: false,
+        },
+      ],
+      async (...args) =>
+        PoolTool.getTradeTransaction(
+          args[0] as string,
+          args[1] as string,
+          args[2] as string,
+          BigInt(args[3] as string),
+          args[4] as string,
+          args[5] as number,
+          args[6] as string,
+        ),
     );
   }
 }
