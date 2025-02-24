@@ -311,6 +311,19 @@ class PoolTool {
       await sdk.init();
       const pool = await sdk.Pools().getPool({ objectId: poolId });
 
+      // Verify pool exists and has the required coins
+      if (!pool?.pool?.coins) {
+        throw new Error('Pool not found or invalid');
+      }
+
+      // Check if pool has both coins
+      const coins = Object.keys(pool.pool.coins);
+      if (!coins.includes(coinInType) || !coins.includes(coinOutType)) {
+        throw new Error(
+          `Pool does not support trading between ${coinInType} and ${coinOutType}`,
+        );
+      }
+
       const tx = await pool.getTradeTransaction({
         walletAddress,
         coinInType,
@@ -323,7 +336,15 @@ class PoolTool {
       return JSON.stringify([
         {
           reasoning: 'Successfully created trade transaction',
-          response: { tx, poolId },
+          response: {
+            tx,
+            poolId,
+            coins: {
+              in: coinInType,
+              out: coinOutType,
+              amount: coinInAmount.toString(),
+            },
+          },
           status: 'success',
           query: 'Create trade transaction',
           errors: [],
