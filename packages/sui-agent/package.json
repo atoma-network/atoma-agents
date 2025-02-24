@@ -20,15 +20,15 @@
   "description": "",
   "dependencies": {
     "@bluefin-exchange/bluefin-v2-client": "^6.1.29",
-    "@cetusprotocol/cetus-sui-clmm-sdk": "^5.2.0",
+    "@cetusprotocol/cetus-sui-clmm-sdk": "^5.3.1",
     "@mysten/sui": "1.1.0",
-    "aftermath-ts-sdk": "^1.2.49",
+    "aftermath-ts-sdk": "^1.2.53",
     "atoma-sdk": "github:atoma-network/atoma-sdk-typescript",
     "axios": "^1.7.9",
     "bn.js": "^5.2.1",
     "dotenv": "^16.4.7",
     "mongoose": "^8.10.0",
-    "navi-sdk": "^1.4.24",
+    "navi-sdk": "^1.5.3",
     "typescript": "^5.7.3",
     "@suilend/sdk": "^1.1.36"
   },

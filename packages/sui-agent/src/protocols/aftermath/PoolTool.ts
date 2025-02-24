@@ -1,6 +1,6 @@
 import { Aftermath } from 'aftermath-ts-sdk';
 import { handleError } from '../../utils';
-import { RankingMetric, PoolInfo, SDKPool } from './types';
+import { PoolInfo, SDKPool } from './types';
 
 class PoolTool {
   private static sdk: Aftermath | null = null;
@@ -75,101 +75,6 @@ class PoolTool {
   }
 
   /**
-   * Gets ranked pools by metric
-   * @param metric Metric to rank by (apr, tvl, fees, volume)
-   * @param numPools Number of top pools to return
-   * @returns Ranked pool information
-   */
-  public static async getRankedPools(
-    metric: RankingMetric,
-    numPools = 5,
-  ): Promise<string> {
-    try {
-      const sdk = PoolTool.initSDK();
-      await sdk.init();
-      const pools = await sdk.Pools().getPools({ objectIds: [] });
-
-      // Process all pools
-      const processedPools = await Promise.all(
-        pools.map(async (poolInstance) => {
-          if (!poolInstance.pool?.objectId) return null;
-          return this.processPool(poolInstance, poolInstance.pool.objectId);
-        }),
-      );
-
-      const validPools = processedPools.filter(
-        (pool): pool is PoolInfo => pool !== null && pool.tokens.length > 0,
-      );
-
-      // Sort pools based on the specified metric
-      const sortedPools = validPools.sort((a, b) => {
-        let valueA: number, valueB: number;
-
-        switch (metric) {
-          case 'apr':
-            valueA = a.apr;
-            valueB = b.apr;
-            break;
-          case 'tvl':
-            valueA = a.tvl;
-            valueB = b.tvl;
-            break;
-          case 'fees':
-            valueA = a.fee;
-            valueB = b.fee;
-            break;
-          case 'volume':
-            valueA = a.tvl * a.fee; // Using TVL * fee as a proxy for volume
-            valueB = b.tvl * b.fee;
-            break;
-          default:
-            valueA = a.tvl;
-            valueB = b.tvl;
-        }
-
-        return valueB - valueA; // Default to descending order
-      });
-
-      // Take only the requested number of pools
-      const topPools = sortedPools.slice(0, numPools);
-
-      // Format the response with ranking information
-      const rankedPools = topPools.map((pool, index) => ({
-        rank: index + 1,
-        id: pool.id,
-        metrics: {
-          apr: `${pool.apr.toFixed(2)}%`,
-          tvl: `$${pool.tvl.toLocaleString()}`,
-          fee: `${(pool.fee * 100).toFixed(2)}%`,
-          volume: `$${(pool.tvl * pool.fee).toLocaleString()}`, // Estimated volume
-        },
-      }));
-
-      return JSON.stringify([
-        {
-          reasoning: `Successfully retrieved top ${numPools} pools ranked by ${metric}`,
-          response: {
-            metric,
-            numPools,
-            pools: rankedPools,
-            timestamp: new Date().toISOString(),
-          },
-          status: 'success',
-          query: `Get top ${numPools} pools by ${metric}`,
-          errors: [],
-        },
-      ]);
-    } catch (error) {
-      return JSON.stringify([
-        handleError(error, {
-          reasoning: 'Failed to retrieve ranked pools',
-          query: `Attempted to get top ${numPools} pools by ${metric}`,
-        }),
-      ]);
-    }
-  }
-
-  /**
    * Gets pool events
    * @param poolId Pool ID to get events for
    * @param eventType Type of events to get (deposit or withdraw)
@@ -179,20 +84,35 @@ class PoolTool {
   public static async getPoolEvents(
     poolId: string,
     eventType: string,
-    limit: number,
+    limit = 10,
   ): Promise<string> {
     try {
       const sdk = PoolTool.initSDK();
       await sdk.init();
       const pool = await sdk.Pools().getPool({ objectId: poolId });
-      const events =
-        eventType === 'deposit'
-          ? await pool.getDepositEvents({ limit })
-          : await pool.getWithdrawEvents({ limit });
+
+      // Use the pools instance to get events
+      const events = await pool.getInteractionEvents({
+        walletAddress: pool.pool.creator, // Use the pool creator's address
+        limit,
+        cursor: undefined, // Add cursor for pagination
+      });
+
+      // Filter events by type
+      const filteredEvents = events.events?.filter((event) =>
+        eventType === 'deposit' ? 'deposits' in event : 'withdrawn' in event,
+      );
+
       return JSON.stringify([
         {
           reasoning: 'Successfully retrieved pool events',
-          response: events,
+          response: {
+            events: filteredEvents,
+            pagination: {
+              limit,
+              hasMore: events.events?.length === limit,
+            },
+          },
           status: 'success',
           query: `Get ${eventType} events for pool ${poolId}`,
           errors: [],
@@ -241,6 +161,200 @@ class PoolTool {
         handleError(error, {
           reasoning: 'Failed to retrieve pool information',
           query: `Attempted to get info for pool ${poolId}`,
+        }),
+      ]);
+    }
+  }
+
+  /**
+   * Gets pool statistics
+   * @param poolId Pool ID to get stats for
+   * @returns Pool statistics including TVL, volume, APR etc.
+   */
+  public static async getPoolStats(poolId: string): Promise<string> {
+    try {
+      const sdk = PoolTool.initSDK();
+      await sdk.init();
+
+      const stats = await sdk.Pools().getPoolsStats({
+        poolIds: [poolId],
+      });
+
+      return JSON.stringify([
+        {
+          reasoning: 'Successfully retrieved pool statistics',
+          response: {
+            poolId,
+            stats: {
+              volume: stats[0].volume,
+              tvl: stats[0].tvl,
+              supplyPerLps: stats[0].supplyPerLps,
+              lpPrice: stats[0].lpPrice,
+              fees: stats[0].fees,
+              apr: stats[0].apr,
+            },
+            timestamp: new Date().toISOString(),
+          },
+          status: 'success',
+          query: `Get statistics for pool ${poolId}`,
+          errors: [],
+        },
+      ]);
+    } catch (error) {
+      return JSON.stringify([
+        handleError(error, {
+          reasoning: 'Failed to retrieve pool statistics',
+          query: `Attempted to get statistics for pool ${poolId}`,
+        }),
+      ]);
+    }
+  }
+
+  /**
+   * Gets deposit transaction for a pool
+   */
+  public static async getDepositTransaction(
+    poolId: string,
+    walletAddress: string,
+    amountsIn: Record<string, bigint>,
+    slippage: number,
+    referrer?: string,
+  ): Promise<string> {
+    try {
+      const sdk = PoolTool.initSDK();
+      await sdk.init();
+      const pool = await sdk.Pools().getPool({ objectId: poolId });
+
+      const tx = await pool.getDepositTransaction({
+        walletAddress,
+        amountsIn,
+        slippage,
+        referrer,
+      });
+
+      return JSON.stringify([
+        {
+          reasoning: 'Successfully created deposit transaction',
+          response: { tx, poolId },
+          status: 'success',
+          query: 'Create deposit transaction',
+          errors: [],
+        },
+      ]);
+    } catch (error) {
+      return JSON.stringify([
+        handleError(error, {
+          reasoning: 'Failed to create deposit transaction',
+          query: 'Create deposit transaction',
+        }),
+      ]);
+    }
+  }
+
+  /**
+   * Gets withdraw transaction for a pool
+   */
+  public static async getWithdrawTransaction(
+    poolId: string,
+    walletAddress: string,
+    amountsOutDirection: Record<string, bigint>,
+    lpCoinAmount: bigint,
+    slippage: number,
+    referrer?: string,
+  ): Promise<string> {
+    try {
+      const sdk = PoolTool.initSDK();
+      await sdk.init();
+      const pool = await sdk.Pools().getPool({ objectId: poolId });
+
+      const tx = await pool.getWithdrawTransaction({
+        walletAddress,
+        amountsOutDirection,
+        lpCoinAmount,
+        slippage,
+        referrer,
+      });
+
+      return JSON.stringify([
+        {
+          reasoning: 'Successfully created withdraw transaction',
+          response: { tx, poolId },
+          status: 'success',
+          query: 'Create withdraw transaction',
+          errors: [],
+        },
+      ]);
+    } catch (error) {
+      return JSON.stringify([
+        handleError(error, {
+          reasoning: 'Failed to create withdraw transaction',
+          query: 'Create withdraw transaction',
+        }),
+      ]);
+    }
+  }
+
+  /**
+   * Gets trade transaction for a pool
+   */
+  public static async getTradeTransaction(
+    poolId: string,
+    walletAddress: string,
+    coinInType: string,
+    coinInAmount: bigint,
+    coinOutType: string,
+    slippage: number,
+    referrer?: string,
+  ): Promise<string> {
+    try {
+      const sdk = PoolTool.initSDK();
+      await sdk.init();
+      const pool = await sdk.Pools().getPool({ objectId: poolId });
+
+      // Verify pool exists and has the required coins
+      if (!pool?.pool?.coins) {
+        throw new Error('Pool not found or invalid');
+      }
+
+      // Check if pool has both coins
+      const coins = Object.keys(pool.pool.coins);
+      if (!coins.includes(coinInType) || !coins.includes(coinOutType)) {
+        throw new Error(
+          `Pool does not support trading between ${coinInType} and ${coinOutType}`,
+        );
+      }
+
+      const tx = await pool.getTradeTransaction({
+        walletAddress,
+        coinInType,
+        coinInAmount,
+        coinOutType,
+        slippage,
+        referrer,
+      });
+
+      return JSON.stringify([
+        {
+          reasoning: 'Successfully created trade transaction',
+          response: {
+            tx,
+            poolId,
+            coins: {
+              in: coinInType,
+              out: coinOutType,
+              amount: coinInAmount.toString(),
+            },
+          },
+          status: 'success',
+          query: 'Create trade transaction',
+          errors: [],
+        },
+      ]);
+    } catch (error) {
+      return JSON.stringify([
+        handleError(error, {
+          reasoning: 'Failed to create trade transaction',
+          query: 'Create trade transaction',
         }),
       ]);
     }

@@ -53,7 +53,7 @@ const suiAgent = new Agent('your_atoma_sdk_bearer_token');
 // Use the agent to process queries
 async function processQuery(query: string) {
   try {
-    const result = await suiAgent.SuperVisorAgent(query);
+    const result = await suiAgent.processUserQueryPipeline(query);
     return result;
   } catch (error) {
     console.error('Error processing query:', error);
@@ -72,7 +72,7 @@ const suiAgent = new Agent(config.atomaSdkBearerAuth);
 app.post('/query', async (req, res) => {
   try {
     const { query } = req.body;
-    const result = await suiAgent.SuperVisorAgent(query);
+    const result = await suiAgent.processUserQueryPipeline(query);
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });

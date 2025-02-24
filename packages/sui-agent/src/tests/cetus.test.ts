@@ -8,7 +8,7 @@ const agent = new Agents(process.env.BEARER_TOKEN || '');
 describe('Cetus Protocol Integration Tests', () => {
   describe('Pool Operations', () => {
     test('should get pool information', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         `Get information about Cetus pool ${TEST_POOLS.SUI_USDC}`,
       );
       expect(response).toBeDefined();
@@ -19,7 +19,7 @@ describe('Cetus Protocol Integration Tests', () => {
     });
 
     test('should get pool statistics and TVL', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         `Get statistics and TVL for Cetus pool ${TEST_POOLS.USDC_USDT}`,
       );
       expect(response).toBeDefined();
@@ -29,7 +29,7 @@ describe('Cetus Protocol Integration Tests', () => {
     });
 
     test('should list all pools', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         'List all available Cetus pools',
       );
       expect(response).toBeDefined();
@@ -41,7 +41,7 @@ describe('Cetus Protocol Integration Tests', () => {
 
   describe('Position Operations', () => {
     test('should get positions for address', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         `Get all Cetus positions for address ${TEST_ADDRESSES.LP_PROVIDER}`,
       );
       expect(response).toBeDefined();
@@ -50,7 +50,7 @@ describe('Cetus Protocol Integration Tests', () => {
     });
 
     test('should calculate add liquidity parameters', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         `Calculate parameters for adding 1000 USDC to Cetus pool ${TEST_POOLS.USDC_USDT} with ${SLIPPAGE.MEDIUM * 100}% slippage`,
       );
       expect(response).toBeDefined();
@@ -63,12 +63,12 @@ describe('Cetus Protocol Integration Tests', () => {
 
     test('should calculate remove liquidity parameters', async () => {
       // First get a position
-      const positionsResponse = await agent.SuperVisorAgent(
+      const positionsResponse = await agent.processUserQueryPipeline(
         `Get all Cetus positions for address ${TEST_ADDRESSES.LP_PROVIDER}`,
       );
       const position = positionsResponse.response[0];
 
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         `Calculate parameters for removing liquidity from Cetus position ${position.pos_object_id} with ${SLIPPAGE.LOW * 100}% slippage`,
       );
       expect(response).toBeDefined();
@@ -80,7 +80,7 @@ describe('Cetus Protocol Integration Tests', () => {
 
   describe('Trading Operations', () => {
     test('should calculate swap quote for exact input', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         `Calculate swap quote for trading 1 SUI to USDC on Cetus pool ${TEST_POOLS.SUI_USDC} with ${SLIPPAGE.HIGH * 100}% slippage`,
       );
       expect(response).toBeDefined();
@@ -90,7 +90,7 @@ describe('Cetus Protocol Integration Tests', () => {
     });
 
     test('should calculate swap quote for exact output', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         `Calculate swap quote to receive exactly 100 USDC by trading SUI on Cetus pool ${TEST_POOLS.SUI_USDC} with ${SLIPPAGE.MEDIUM * 100}% slippage`,
       );
       expect(response).toBeDefined();
@@ -100,7 +100,7 @@ describe('Cetus Protocol Integration Tests', () => {
     });
 
     test('should handle price impact calculation', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         `Calculate price impact for swapping 1000 USDC to USDT on Cetus pool ${TEST_POOLS.USDC_USDT}`,
       );
       expect(response).toBeDefined();
@@ -114,7 +114,7 @@ describe('Cetus Protocol Integration Tests', () => {
 
   describe('Pool Creation', () => {
     test('should validate pool creation parameters', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         'Create a new Cetus pool for SUI/USDC with tick spacing 2 and initial price 1.0',
       );
       expect(response).toBeDefined();
@@ -126,7 +126,7 @@ describe('Cetus Protocol Integration Tests', () => {
 
   describe('Error Handling', () => {
     test('should handle invalid pool ID gracefully', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         'Get information about Cetus pool 0xinvalid_pool_id',
       );
       expect(response).toBeDefined();
@@ -135,7 +135,7 @@ describe('Cetus Protocol Integration Tests', () => {
     });
 
     test('should handle invalid address gracefully', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         'Get all Cetus positions for address 0xinvalid_address',
       );
       expect(response).toBeDefined();
@@ -144,7 +144,7 @@ describe('Cetus Protocol Integration Tests', () => {
     });
 
     test('should handle excessive slippage values', async () => {
-      const response = await agent.SuperVisorAgent(
+      const response = await agent.processUserQueryPipeline(
         `Calculate swap quote for trading 1 SUI to USDC on Cetus pool ${TEST_POOLS.SUI_USDC} with 50% slippage`,
       );
       expect(response).toBeDefined();

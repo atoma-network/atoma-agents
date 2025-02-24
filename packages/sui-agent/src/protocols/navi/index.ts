@@ -245,7 +245,7 @@ export async function getNaviAvailableRewards(
     if (!naviClient) {
       throw new Error('NAVI SDK client not initialized');
     }
-    const result = await naviClient.getAddressAvailableRewards(address, 1);
+    const result = await naviClient.getAddressAvailableRewards(address, [1]);
     return JSON.stringify([
       {
         reasoning: 'Successfully retrieved NAVI available rewards',

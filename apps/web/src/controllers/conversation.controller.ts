@@ -39,7 +39,7 @@ class ConversationController {
         res.status(400).json({ error: 'Invalid conversation ID' });
         return;
       }
-      const result = await suiAgent.SuperVisorAgent(message, walletAddress);
+      const result = await suiAgent.processUserQueryPipeline(message, walletAddress);
       const newMessage = await this.messageService.createMessage({
         sender: sender ? sender : 'user',
         walletAddress,

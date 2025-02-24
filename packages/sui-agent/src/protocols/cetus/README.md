@@ -31,22 +31,22 @@ The Sui Agent includes comprehensive integration with the Cetus Protocol, provid
 const agent = new Agents(YOUR_BEARER_TOKEN);
 
 // Get pool information
-const poolInfo = await agent.SuperVisorAgent(
+const poolInfo = await agent.processUserQueryPipeline(
   'Get information about Cetus pool 0x123...abc',
 );
 
 // Get positions for an address
-const positions = await agent.SuperVisorAgent(
+const positions = await agent.processUserQueryPipeline(
   'Get all Cetus positions for address 0x456...def',
 );
 
 // Calculate and execute a swap
-const swap = await agent.SuperVisorAgent(
+const swap = await agent.processUserQueryPipeline(
   'Swap 1 SUI for USDC on Cetus pool 0x123...abc with 1% slippage',
 );
 
 // Add liquidity
-const addLiquidity = await agent.SuperVisorAgent(
+const addLiquidity = await agent.processUserQueryPipeline(
   'Add 100 USDC as liquidity to Cetus pool 0x123...abc with 0.5% slippage',
 );
 ```

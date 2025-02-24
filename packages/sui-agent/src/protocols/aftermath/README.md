@@ -32,20 +32,22 @@ The Sui Agent includes comprehensive integration with the Aftermath Protocol, pr
 const agent = new Agents(YOUR_BEARER_TOKEN);
 
 // Get pool information
-const poolInfo = await agent.SuperVisorAgent(
+const poolInfo = await agent.processUserQueryPipeline(
   'Get information about Aftermath pool 0x123...abc',
 );
 
 // Get APR for a token
-const apr = await agent.SuperVisorAgent('Get APR for token 0x456...def');
+const apr = await agent.processUserQueryPipeline(
+  'Get APR for token 0x456...def',
+);
 
 // Execute a multi-pool deposit
-const deposit = await agent.SuperVisorAgent(
+const deposit = await agent.processUserQueryPipeline(
   'Deposit 100 SUI into top 3 Aftermath pools by APR with 1% slippage',
 );
 
 // Check staking positions
-const stakingInfo = await agent.SuperVisorAgent(
+const stakingInfo = await agent.processUserQueryPipeline(
   'Get my staking positions for address 0x789...ghi',
 );
 ```
