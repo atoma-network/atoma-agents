@@ -21,7 +21,7 @@ class AftermathTools {
     // Price Tools
     tools.registerTool(
       'get_coin_price on Aftermath',
-      'Get the price of a single coin on Aftermath',
+      'Get the price of a single coin like SUI, AFSUI or any other coin on Aftermath or SUI Blockchain. You can use this tool to get the price of any coin.',
       [
         {
           name: 'coin',
@@ -35,7 +35,7 @@ class AftermathTools {
 
     tools.registerTool(
       'get_coins_to_price on Aftermath',
-      'Get the price of multiple coins on Aftermath',
+      'Get the price of multiple coins on Aftermath and or SUI Blockchain. You can use this tool to get the price of any coin.',
       [
         {
           name: 'coins',
