@@ -184,7 +184,7 @@ class Utils {
     const finalAns = await AtomaInstance.atomaChat([
       { role: 'assistant', content: finalPrompt },
       { role: 'user', content: query },
-    ]);
+    ], process.env.ATOMA_CHAT_COMPLETIONS_MODEL);
 
     const res = finalAns.choices[0].message.content;
     const parsedRes = JSON.parse(res);

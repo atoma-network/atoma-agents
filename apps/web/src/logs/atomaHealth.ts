@@ -63,7 +63,7 @@ export const checkAtomaSDK = async (bearerAuth: string): Promise<void> => {
           role: 'user',
           content: 'Hi, are you there?'
         }
-      ]),
+      ], process.env.ATOMA_CHAT_COMPLETIONS_MODEL),
       timeoutPromise(30000)
     ])) as ChatResponse;
 

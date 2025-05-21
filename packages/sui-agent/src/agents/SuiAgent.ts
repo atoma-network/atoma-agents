@@ -61,7 +61,7 @@ class Agents {
     return await this.AtomaClass.atomaChat([
       { content: decomposerPrompt, role: 'assistant' },
       { content: prompt, role: 'user' },
-    ]);
+    ], process.env.ATOMA_CHAT_COMPLETIONS_MODEL);
   }
 
   /**
@@ -119,9 +119,9 @@ class Agents {
   async processUserQueryPipeline(prompt: string, walletAddress?: string) {
     // Process intent
     const decomposer = await this.QueryDecomposer(prompt);
-    const decomposed: string[] = JSON.parse(
-      decomposer.choices[0].message.content,
-    );
+    const jsonContent = decomposer.choices[0].message.content.replace(/```json\n|\n```/g, '').trim();
+    console.log(jsonContent, 'jsonContent');
+    const decomposed: string[] = JSON.parse(jsonContent);
     console.log(decomposed);
     const res = await this.toolsSelector(decomposed, walletAddress);
     console.log(res, 'this is intent agent response');
