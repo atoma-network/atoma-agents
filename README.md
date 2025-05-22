@@ -24,6 +24,12 @@ Our goal is to create a full-fledged agent system using the Atoma's distributed 
 - npm or yarn
 - Basic understanding of blockchain concepts
 
+
+# Create and configure the .env file
+
+You can use the [.env.example](apps/web/.env.example)
+
+
 ### Installation
 
 ```bash
@@ -33,6 +39,7 @@ git clone https://github.com/atoma-network/atoma-agents.git
 # Install dependencies
 cd atoma-agents
 pnpm install
+
 
 # Start the development server
 pnpm run dev
@@ -88,14 +95,14 @@ You can interact with the agent using either cURL or Postman.
 
 ```bash
 # Example query
-curl -X POST http://localhost:2512/v1/query \
+curl -X POST http://localhost:2512/query \
   -H "Content-Type: application/json" \
   -d '{"query": "what is the price of sui and btc"}'
 ```
 
 ### Using Postman
 
-1. Create a new POST request to `http://localhost:2512/v1/query`
+1. Create a new POST request to `http://localhost:2512/query`
 2. Set the Content-Type header to `application/json`
 3. In the request body, add your query:
 

@@ -2,7 +2,6 @@ import express, { Application } from 'express';
 import cors from 'cors';
 import v1routes from './routes/v1';
 import { connectDB } from './config/db';
-//import queryRouter from './routes/v1/query';
 
 /**
  * Express application instance.

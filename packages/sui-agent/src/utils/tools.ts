@@ -87,15 +87,15 @@ class Tools {
     const response = await AtomaClass.atomaChat([
       { role: 'assistant', content: promptWithAddr },
       { role: 'user', content: query },
-    ]);
+    ], process.env.ATOMA_CHAT_COMPLETIONS_MODEL);
 
     if (
       response &&
       'choices' in response &&
       response.choices[0]?.message?.content
     ) {
-      console.log(response.choices[0].message.content);
-      const parsedContent = JSON.parse(response.choices[0].message.content);
+      const jsonContent = response.choices[0].message.content.replace(/```json\n|\n```/g, '').trim();
+      const parsedContent = JSON.parse(jsonContent);
       if (Array.isArray(parsedContent) && parsedContent.length > 0) {
         return parsedContent as toolResponse[];
       }

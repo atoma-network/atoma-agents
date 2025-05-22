@@ -12,7 +12,7 @@ dotenv.config();
  * - Add model selection based on query complexity
  */
 const ATOMA_CHAT_COMPLETIONS_MODEL =
-  process.env.ATOMA_CHAT_MODEL || 'meta-llama/Llama-3.3-70B-Instruct';
+  process.env.ATOMA_CHAT_COMPLETIONS_MODEL || 'meta-llama/Llama-3.3-70B-Instruct';
 console.log(ATOMA_CHAT_COMPLETIONS_MODEL);
 
 /**
@@ -72,9 +72,9 @@ class Atoma {
     model?: string,
   ) {
     console.log('**************');
-    console.log('using atoma chat');
+    console.log('using atoma chat with model', model);
     console.log('**************');
-    return await new AtomaSDK({ bearerAuth: this.bearerAuth }).chat.create({
+    return await new AtomaSDK({ bearerAuth: this.bearerAuth }).confidentialChat.create({
       messages: messages,
       model: model || 'meta-llama/Llama-3.3-70B-Instruct',
     });
